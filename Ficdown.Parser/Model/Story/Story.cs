@@ -6,7 +6,7 @@
     {
         public string Name { get; set; }
         public string Description { get; set; }
-        public Scene FirstScene { get; set; }
+        public string FirstScene { get; set; }
         public IDictionary<string, IList<Action>> States { get; set; }
         public IDictionary<string, IList<Scene>> Scenes { get; set; }
     }

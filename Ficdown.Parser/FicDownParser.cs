@@ -1,6 +1,5 @@
 ﻿namespace Ficdown.Parser
 {
-    using System.IO;
     using Engine;
     using Model.Story;
 
@@ -21,11 +20,13 @@
             set { _sceneLinker = value; }
         }
 
-        public Story ParseStory(string storyFilePath)
+        public Story ParseStory(string storyText)
         {
-            var lines = File.ReadAllLines(storyFilePath);
+            var lines = storyText.Split('\n');
             var blocks = BlockHandler.ExtractBlocks(lines);
-            return BlockHandler.ParseBlocks(blocks);
+            var story = BlockHandler.ParseBlocks(blocks);
+            SceneLinker.ExpandScenes(story);
+            return story;
         }
     }
 }

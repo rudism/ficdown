@@ -47,5 +47,10 @@
             }
             else throw new FormatException(string.Format("Invalid href: {0}", href));
         }
+
+        public static bool ConditionsSatisfied(string cquery, IList<string> conditions)
+        {
+            return false;
+        }
     }
 }

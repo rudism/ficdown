@@ -74,12 +74,7 @@
 
             if (!story.Scenes.ContainsKey(storyTarget))
                 throw new FormatException(string.Format("Story targets non-existent scene: {0}", storyTarget));
-            story.FirstScene =
-                story.Scenes[storyTarget].SingleOrDefault(
-                    s => s.Conditions == null || s.Conditions.All(c => c.StartsWith("!")));
-            if (story.FirstScene == null)
-                throw new FormatException(string.Format("Story targets scene with no unconditional definition: {0}",
-                    storyTarget));
+            story.FirstScene = storyTarget;
 
             return story;
         }
