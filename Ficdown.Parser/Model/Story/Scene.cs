@@ -7,6 +7,5 @@
         public string Name { get; set; }
         public string Description { get; set; }
         public IList<string> Conditions { get; set; }
-        public IList<string> Toggles { get; set; }
     }
 }

@@ -42,10 +42,13 @@
     <Compile Include="Engine\BlockHandler.cs" />
     <Compile Include="Engine\IBlockHandler.cs" />
     <Compile Include="Engine\RegexLib.cs" />
+    <Compile Include="Engine\SceneLinker.cs" />
     <Compile Include="Engine\Utilities.cs" />
     <Compile Include="FicDownParser.cs" />
     <Compile Include="Model\Parser\Block.cs" />
     <Compile Include="Model\Parser\BlockType.cs" />
+    <Compile Include="Engine\ISceneLinker.cs" />
+    <Compile Include="Model\Story\Extensions\SceneExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Model\Story\Action.cs" />
     <Compile Include="Model\Story\Scene.cs" />

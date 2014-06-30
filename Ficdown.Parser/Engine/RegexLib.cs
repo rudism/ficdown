@@ -10,7 +10,16 @@
                 string.Format(@"(?<anchor>\[(?<text>{0})\]\([ ]*(?<href>{1})[ ]*\))", GetNestedBracketsPattern(),
                     GetNestedParensPattern()), RegexOptions.Singleline | RegexOptions.Compiled);
 
-        public static Regex Href = new Regex(@"^(\?(?<conditions>[^#]+))?(#(?<toggles>.+))?$", RegexOptions.Compiled);
+        private const string RegexValidName = @"[a-zA-Z](-?[a-zA-Z0-9])*";
+        private static readonly string RegexHrefTarget = string.Format(@"\/({0})", RegexValidName);
+        private static readonly string RegexHrefConditions = string.Format(@"\?((!?{0})(&!?{0})*)?", RegexValidName);
+        private static readonly string RegexHrefToggles = string.Format(@"#({0})(\+{0})*", RegexValidName);
+
+        public static Regex Href =
+            new Regex(
+                string.Format(@"^(?<target>{0})?(?<conditions>{1})?(?<toggles>{2})?$", RegexHrefTarget,
+                    RegexHrefConditions, RegexHrefToggles), RegexOptions.Compiled);
+
 
         private const int _nestDepth = 6;
 

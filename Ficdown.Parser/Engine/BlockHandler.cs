@@ -42,8 +42,19 @@
             var storyBlock = blocks.Single(b => b.Type == BlockType.Story);
             var storyName = RegexLib.Anchors.Match(storyBlock.Name);
 
+            string storyTarget;
+            try
+            {
+                Utilities.ParseHref(storyName.Groups["href"].Value, out storyTarget);
+            }
+            catch (FormatException)
+            {
+                throw new FormatException(string.Format("Story href should only have target: {0}",
+                    storyName.Groups["href"].Value));
+            }
+
             if (!storyName.Success)
-                throw new FormatException("Story name must be a link to the first scene.");
+                throw new FormatException("Story name must link to the first scene.");
 
             var story = new Story
             {
@@ -53,7 +64,7 @@
                 States = new Dictionary<string, IList<Action>>()
             };
 
-            var scenes = blocks.Where(b => b.Type == BlockType.Scene).Select(b => BlockToScene(b));
+            var scenes = blocks.Where(b => b.Type == BlockType.Scene).Select(BlockToScene);
             foreach (var scene in scenes)
             {
                 var key = Utilities.NormalizeString(scene.Name);
@@ -61,21 +72,18 @@
                 story.Scenes[key].Add(scene);
             }
 
+            if (!story.Scenes.ContainsKey(storyTarget))
+                throw new FormatException(string.Format("Story targets non-existent scene: {0}", storyTarget));
+            story.FirstScene =
+                story.Scenes[storyTarget].SingleOrDefault(
+                    s => s.Conditions == null || s.Conditions.All(c => c.StartsWith("!")));
+            if (story.FirstScene == null)
+                throw new FormatException(string.Format("Story targets scene with no unconditional definition: {0}",
+                    storyTarget));
+
             return story;
         }
 
-        private void ParseHref(string href, out IList<string> conditions, out IList<string> toggles)
-        {
-            var match = RegexLib.Href.Match(href);
-            if (match.Success)
-            {
-                var cstr = match.Groups["conditions"].Value;
-                var tstr = match.Groups["toggles"].Value;
-            }
-            else throw new FormatException(string.Format("Invalid href: {0}", href));
-            conditions = null;
-            toggles = null;
-        }
 
         private Scene BlockToScene(Block block)
         {
@@ -88,10 +96,16 @@
             if (sceneName.Success)
             {
                 scene.Name = sceneName.Groups["text"].Value;
-                IList<string> conditions, toggles;
-                ParseHref(sceneName.Groups["href"].Value, out conditions, out toggles);
+                IList<string> conditions;
+                try
+                {
+                    Utilities.ParseHref(sceneName.Groups["href"].Value, out conditions);
+                }
+                catch (FormatException)
+                {
+                    throw new FormatException(string.Format("Scene href should only have conditions: {0}", block.Name));
+                }
                 scene.Conditions = conditions;
-                scene.Toggles = toggles;
             }
             else scene.Name = block.Name;
 
