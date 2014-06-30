@@ -5,9 +5,12 @@
 
     internal static class RegexLib
     {
-        public static Regex Anchors = new Regex(string.Format(@"(?<anchor>\[(?<text>{0})\]\([ ]*(?<href>{1})[ ]*\))",
-            GetNestedBracketsPattern(), GetNestedParensPattern()),
-                RegexOptions.Singleline | RegexOptions.Compiled);
+        public static Regex Anchors =
+            new Regex(
+                string.Format(@"(?<anchor>\[(?<text>{0})\]\([ ]*(?<href>{1})[ ]*\))", GetNestedBracketsPattern(),
+                    GetNestedParensPattern()), RegexOptions.Singleline | RegexOptions.Compiled);
+
+        public static Regex Href = new Regex(@"^(\?(?<conditions>[^#]+))?(#(?<toggles>.+))?$", RegexOptions.Compiled);
 
         private const int _nestDepth = 6;
 

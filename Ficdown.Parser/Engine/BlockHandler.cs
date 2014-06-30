@@ -64,6 +64,19 @@
             return story;
         }
 
+        private void ParseHref(string href, out IList<string> conditions, out IList<string> toggles)
+        {
+            var match = RegexLib.Href.Match(href);
+            if (match.Success)
+            {
+                var cstr = match.Groups["conditions"].Value;
+                var tstr = match.Groups["toggles"].Value;
+            }
+            else throw new FormatException(string.Format("Invalid href: {0}", href));
+            conditions = null;
+            toggles = null;
+        }
+
         private Scene BlockToScene(Block block)
         {
             var scene = new Scene
@@ -75,11 +88,12 @@
             if (sceneName.Success)
             {
                 scene.Name = sceneName.Groups["text"].Value;
+                IList<string> conditions, toggles;
+                ParseHref(sceneName.Groups["href"].Value, out conditions, out toggles);
+                scene.Conditions = conditions;
+                scene.Toggles = toggles;
             }
-            else
-            {
-                scene.Name = block.Name;
-            }
+            else scene.Name = block.Name;
 
             return scene;
         }
