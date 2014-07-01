@@ -15,8 +15,8 @@ Your cave only has one tiny window, and through it you can see [the sun shining 
 **What do you want to do?**
 
 - [Go outside and start walking to the palace.](/outside)
-- [Wait for it to stop raining.](#stopped-raining)
-- [Put on your raincoat.](#raincoat)
+- [Wait for it to stop raining.](?!stopped-raining#stopped-raining)
+- [Put on your raincoat.](?!raincoat#raincoat)
 
 ### Raincoat
 

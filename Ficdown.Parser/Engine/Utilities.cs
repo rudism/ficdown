@@ -1,4 +1,8 @@
-﻿namespace Ficdown.Parser.Engine
+﻿using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("Ficdown.Parser.Tests")]
+
+namespace Ficdown.Parser.Engine
 {
     using System;
     using System.Collections.Generic;
@@ -46,11 +50,6 @@
                     toggles = new List<string>(tstr.TrimStart('#').Split('+').Select(t => t.Trim().ToLower()));
             }
             else throw new FormatException(string.Format("Invalid href: {0}", href));
-        }
-
-        public static bool ConditionsSatisfied(string cquery, IList<string> conditions)
-        {
-            return false;
         }
     }
 }

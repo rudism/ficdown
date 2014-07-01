@@ -1,6 +1,8 @@
 ﻿namespace Ficdown.Parser.Engine
 {
+    using System;
     using System.Collections.Generic;
+    using System.Collections.Specialized;
     using System.Linq;
     using System.Text.RegularExpressions;
     using Model.Story;
@@ -41,11 +43,12 @@
                         }
                     }
                     // resolve the current scene
+                    var original = scene.Clone();
                     newScenes[key].Add(ResolveScene(scene, anchors));
                     // resolve the uniques
                     foreach (var unique in uniques)
                     {
-                        var uscene = scene.Clone();
+                        var uscene = original.Clone();
                         uscene.Conditions = unique;
                         newScenes[key].Add(ResolveScene(uscene, anchors));
                     }
@@ -63,6 +66,7 @@
 
             // make sure this is actually unique
             if (uniques.Any(u => u.Intersect(conditions).Count() == conditions.Count)) return;
+            
 
             uniques.Add(conditions);
 
@@ -78,7 +82,42 @@
         {
             foreach (Match anchor in anchors)
             {
-                var satisfied = Utilities.ConditionsSatisfied(anchor.Groups["conditions"].Value, scene.Conditions);
+                string target;
+                IList<string> conditions, toggles;
+                Utilities.ParseHref(anchor.Groups["href"].Value, out target, out conditions, out toggles);
+                if (conditions != null)
+                {
+                    var satisfied = scene.Conditions == null
+                        ? conditions.All(c => c.StartsWith("!"))
+                        : conditions.All(
+                            c => scene.Conditions.Contains(c) ||
+                                 (c.StartsWith("!") && !scene.Conditions.Contains(c)));
+
+                    var text = anchor.Groups["text"].Value;
+                    var alts = RegexLib.ConditionalText.Match(text);
+                    if (!alts.Success)
+                        throw new FormatException(string.Format("Bad conditional anchor: {0}",
+                            anchor.Groups["anchor"].Value));
+
+                    var replace =
+                        RegexLib.EscapeChar.Replace(satisfied ? alts.Groups["true"].Value : alts.Groups["false"].Value,
+                            string.Empty);
+
+                    // if there's no target or toggles, replace the whole anchor
+                    if (target == null && toggles == null)
+                    {
+                        scene.Description = scene.Description.Replace(anchor.Groups["anchor"].Value, replace);
+                    }
+                    // if there's a target or toggles, replace the text and remove the conditions on the anchor
+                    else
+                    {
+                        scene.Description = scene.Description.Replace(anchor.Groups["anchor"].Value,
+                            string.Format("[{0}]({1}{2})", replace, anchor.Groups["target"].Value,
+                                anchor.Groups["toggles"].Value));
+                    }
+
+                }
+
             }
             return scene;
         }

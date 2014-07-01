@@ -10,6 +10,11 @@
                 string.Format(@"(?<anchor>\[(?<text>{0})\]\([ ]*(?<href>{1})[ ]*\))", GetNestedBracketsPattern(),
                     GetNestedParensPattern()), RegexOptions.Singleline | RegexOptions.Compiled);
 
+        public static Regex ConditionalText = new Regex(@"^(?<true>([^|\\]|\\.)*)(\|(?<false>([^|\\]|\\.)+))?$",
+            RegexOptions.Singleline | RegexOptions.Compiled);
+
+        public static Regex EscapeChar = new Regex(@"(?<!\\)\\", RegexOptions.Compiled);
+
         private const string RegexValidName = @"[a-zA-Z](-?[a-zA-Z0-9])*";
         private static readonly string RegexHrefTarget = string.Format(@"\/({0})", RegexValidName);
         private static readonly string RegexHrefConditions = string.Format(@"\?((!?{0})(&!?{0})*)?", RegexValidName);
