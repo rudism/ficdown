@@ -15,8 +15,8 @@ Your cave only has one tiny window, and through it you can see [the sun shining 
 **What do you want to do?**
 
 - [Go outside and start walking to the palace.](/outside)
-- [Wait for it to stop raining.](?!stopped-raining#stopped-raining)
-- [Put on your raincoat.](?!raincoat#raincoat)
+- [|Wait for it to stop raining.](?stopped-raining#stopped-raining)
+- [|Put on your raincoat.](?raincoat#raincoat)
 
 ### Raincoat
 
@@ -26,7 +26,7 @@ You take your raincoat and put it on. It fits perfectly!
 
 It feels like hours, but it finally stops raining. You hope you won't be late for your new job!
 
-## [Outside](?!raincoat&!stopped-raining)
+## Outside
 
 > You step through the door and feel the water flowing over your metal body. Brrr! That's cold! You start to think that maybe getting your raincoat would be a good idea. This is just the kind of rain that might turn you into a rusty robot statue if you stay in it too long.
 
@@ -37,7 +37,7 @@ You're standing on your front porch in the pouring rain. You need to get to the 
 - [Continue walking to the palace.](/rusted)
 - [Go back into your cave.](/robot-cave)
 
-## Outside
+## [Outside](?stopped-raining)
 
 You step through the door and feel the early afternoon sun warming your metal body. It feels good, but you were supposed to start your new job early in the morning!
 
@@ -57,7 +57,7 @@ You will have a long time to think about your mistake while you wait for another
 
 **You have turned into a rusty robot statue!**
 
-## [Outside](?raincoat&!stopped-raining)
+## [Outside](?raincoat)
 
 You head out the door and into the rain. It's a good thing you put on your raincoat, because it's just the kind of rain that would probably turn you into a rusty robot statue if you stayed in it for too long.
 
@@ -67,10 +67,10 @@ The palace guard looks you up and down. "What do you want?" he asks.
 
 **What will you tell him?**
 
-- ["I'm the new janitor-bot!"](/palace-entrance#new-job)
-- ["I'd like a tour of the palace!"](/palace-entrance)
+- ["I'm the new janitor-bot!"](/palace-gate#new-job)
+- ["I'd like a tour of the palace!"](/palace-gate)
 
-## Palace Entrance
+## Palace Gate
 
 The robot guard looks at you and [nods|frowns](?new-job). "[Oh yeah, they told me to expect you. You're supposed to be starting today right?|We don't do tours on weekdays. Hey, aren't you the new janitor-bot who's starting today?](?new-job)"
 
@@ -117,13 +117,13 @@ You walk into the hall that leads to the living quarters, and find a gate blocki
 
 You're standing in the basement where new employees can pick up their uniforms and learn what their jobs are for the day.
 
-[The Master Janitor Robot is pacing back and forth here, muttering to himself.|There is a funny looking robot here pacing back and forth, muttering to himself. That must be the Master Janitor Robot. When he notices you, he stops muttering and stares at you with crazy eyes.](#talked-to-master)
+[The Master Janitor Robot is pacing back and forth here, muttering to himself.|There is a funny looking robot here pacing back and forth, muttering to himself. That must be the Master Janitor Robot. When he notices you, he stops muttering and stares at you with crazy eyes.](?talked-to-master)
 
 **What will you do?**
 
 - [Go back upstairs.](/palace-entrance)
 - [Ask the Master Janitor Robot what he's muttering about.](#talked-to-master+muttering)
-- [Ask the Master Janitor Robot about your uniform.](#talked-to-master+uniform)
+- [|Ask the Master Janitor Robot about your uniform.](?uniform#talked-to-master+uniform)
 - [Ask the Master Janitor Robot about the gate upstairs.](?tried-gate#talked-to-master+about-the-gate)
 - [Ask the Master Janitor Robot about your job.](?uniform#started-job)
 
@@ -141,11 +141,11 @@ He walks to a box in the corner and pulls out a blue janitor's uniform, then han
 
 ### About the Gate
 
-"Ahh, yes, the gate," says the Master Janitor Robot. "Quite a clever contraption. There's a scanner attached that looks for a special device that's sewn into the [uniform I gave you|uniform that employees here wear](?uniform).[ As I said, you'll want to head up there now to start cleaning room 13.](?started-job)"
+"Ahh, yes, the gate," says the Master Janitor Robot. "Quite a clever contraption. There's a scanner attached that looks for a special device that's sewn into the [uniform I gave you|uniform that employees here wear](?uniform). [As I said, you'll want to head up there now to start cleaning room 13.](?started-job)"
 
 ### Started Job
 
-"Ready to get going?" says the Master Janitor Robot. He continues before you have a chance to answer. "Good, good. Your first job will be to clean room 13 in the living quarters. That's where the Robot King keeps all of his spare robes and crowns. There's a janitor's closet right next to that room where you can get a mop to clean the floors, and a duster to dust off the crowns."
+["Like I said before, your|"Ready to get going?" says the Master Janitor Robot. He continues before you have a chance to answer. "Good, good. Your](?started-job) first job will be to clean room 13 in the living quarters. That's where the Robot King keeps all of his spare robes and crowns. There's a janitor's closet right next to that room where you can get a mop to clean the floors, and a duster to dust off the crowns."
 
 The Master Janitor Robot scratches his chin for a moment, then resumes pacing back and forth and muttering to himself.
 
@@ -155,7 +155,7 @@ You head into the hallway that leads to the living quarters and come to a large 
 
 You notice with some alarm that there's no scanner on the inside of the gate. You don't know how to get back out!
 
-## [Living Quarters](?uniform&!job-started)
+## [Living Quarters](?uniform)
 
 That's when you realize that you never asked the Master Janitor Bot what your job here was. You just took your uniform and left!
 

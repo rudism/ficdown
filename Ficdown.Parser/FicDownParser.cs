@@ -1,5 +1,6 @@
 ﻿namespace Ficdown.Parser
 {
+    using System;
     using Engine;
     using Model.Story;
 
@@ -22,7 +23,7 @@
 
         public Story ParseStory(string storyText)
         {
-            var lines = storyText.Split('\n');
+            var lines = storyText.Split(new[] {"\n", "\r\n"}, StringSplitOptions.None);
             var blocks = BlockHandler.ExtractBlocks(lines);
             var story = BlockHandler.ParseBlocks(blocks);
             SceneLinker.ExpandScenes(story);

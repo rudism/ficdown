@@ -66,7 +66,6 @@
 
             // make sure this is actually unique
             if (uniques.Any(u => u.Intersect(conditions).Count() == conditions.Count)) return;
-            
 
             uniques.Add(conditions);
 
@@ -87,11 +86,7 @@
                 Utilities.ParseHref(anchor.Groups["href"].Value, out target, out conditions, out toggles);
                 if (conditions != null)
                 {
-                    var satisfied = scene.Conditions == null
-                        ? conditions.All(c => c.StartsWith("!"))
-                        : conditions.All(
-                            c => scene.Conditions.Contains(c) ||
-                                 (c.StartsWith("!") && !scene.Conditions.Contains(c)));
+                    var satisfied = scene.Conditions != null && conditions.All(c => scene.Conditions.Contains(c));
 
                     var text = anchor.Groups["text"].Value;
                     var alts = RegexLib.ConditionalText.Match(text);
@@ -103,17 +98,18 @@
                         RegexLib.EscapeChar.Replace(satisfied ? alts.Groups["true"].Value : alts.Groups["false"].Value,
                             string.Empty);
 
-                    // if there's no target or toggles, replace the whole anchor
-                    if (target == null && toggles == null)
+                    // if there's no target or toggles, or the replace text is an empty string, replace the whole anchor
+                    if (string.IsNullOrEmpty(replace) || (target == null && toggles == null))
                     {
                         scene.Description = scene.Description.Replace(anchor.Groups["anchor"].Value, replace);
                     }
                     // if there's a target or toggles, replace the text and remove the conditions on the anchor
                     else
                     {
+                        var parsedHref = RegexLib.Href.Match(anchor.Groups["href"].Value);
                         scene.Description = scene.Description.Replace(anchor.Groups["anchor"].Value,
-                            string.Format("[{0}]({1}{2})", replace, anchor.Groups["target"].Value,
-                                anchor.Groups["toggles"].Value));
+                            string.Format("[{0}]({1}{2})", replace, parsedHref.Groups["target"].Value,
+                                parsedHref.Groups["toggles"].Value));
                     }
 
                 }

@@ -61,7 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="TestStories\the-robot-king.md" />
+    <None Include="TestStories\TheRobotKing.md" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

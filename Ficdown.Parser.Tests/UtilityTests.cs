@@ -94,17 +94,11 @@
             Assert.Contains("condition-state", conditions);
             Assert.Null(toggles);
 
-            Utilities.ParseHref("?!condition-state", out target, out conditions, out toggles);
-            Assert.Null(target);
-            Assert.Equal(1, conditions.Count);
-            Assert.Contains("!condition-state", conditions);
-            Assert.Null(toggles);
-
-            Utilities.ParseHref("?condition-1&!condition-2", out target, out conditions, out toggles);
+            Utilities.ParseHref("?condition-1&condition-2", out target, out conditions, out toggles);
             Assert.Null(target);
             Assert.Equal(2, conditions.Count);
             Assert.Contains("condition-1", conditions);
-            Assert.Contains("!condition-2", conditions);
+            Assert.Contains("condition-2", conditions);
             Assert.Null(toggles);
         }
 
@@ -151,13 +145,14 @@
             Assert.Equal(1, toggles.Count);
             Assert.Contains("toggle-state", toggles);
 
-            Utilities.ParseHref("?!condition-one&condition-two#toggle-state", out target, out conditions, out toggles);
+            Utilities.ParseHref("?condition-one&condition-two#toggle-one+toggle-two", out target, out conditions, out toggles);
             Assert.Null(target);
             Assert.Equal(2, conditions.Count);
-            Assert.Contains("!condition-one", conditions);
+            Assert.Contains("condition-one", conditions);
             Assert.Contains("condition-two", conditions);
-            Assert.Equal(1, toggles.Count);
-            Assert.Contains("toggle-state", toggles);
+            Assert.Equal(2, toggles.Count);
+            Assert.Contains("toggle-one", toggles);
+            Assert.Contains("toggle-two", toggles);
         }
     }
 }

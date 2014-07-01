@@ -17,7 +17,7 @@
 
         private const string RegexValidName = @"[a-zA-Z](-?[a-zA-Z0-9])*";
         private static readonly string RegexHrefTarget = string.Format(@"\/({0})", RegexValidName);
-        private static readonly string RegexHrefConditions = string.Format(@"\?((!?{0})(&!?{0})*)?", RegexValidName);
+        private static readonly string RegexHrefConditions = string.Format(@"\?(({0})(&{0})*)?", RegexValidName);
         private static readonly string RegexHrefToggles = string.Format(@"#({0})(\+{0})*", RegexValidName);
 
         public static Regex Href =

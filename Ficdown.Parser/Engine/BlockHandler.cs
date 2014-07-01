@@ -90,7 +90,7 @@
             var sceneName = RegexLib.Anchors.Match(block.Name);
             if (sceneName.Success)
             {
-                scene.Name = sceneName.Groups["text"].Value;
+                scene.Name = sceneName.Groups["text"].Value.Trim();
                 IList<string> conditions;
                 try
                 {
