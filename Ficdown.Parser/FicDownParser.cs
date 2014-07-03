@@ -1,8 +1,8 @@
 ﻿namespace Ficdown.Parser
 {
     using System;
-    using Engine;
     using Model.Story;
+    using Parser;
 
     public class FicdownParser
     {
@@ -13,12 +13,12 @@
             set { _blockHandler = value; }
         }
 
-        private ISceneLinker _sceneLinker;
+        private IStateResolver _stateResolver;
 
-        public ISceneLinker SceneLinker
+        public IStateResolver StateResolver
         {
-            get { return _sceneLinker ?? (_sceneLinker = new SceneLinker()); }
-            set { _sceneLinker = value; }
+            get { return _stateResolver ?? (_stateResolver = new StateResolver()); }
+            set { _stateResolver = value; }
         }
 
         public Story ParseStory(string storyText)
@@ -26,7 +26,6 @@
             var lines = storyText.Split(new[] {"\n", "\r\n"}, StringSplitOptions.None);
             var blocks = BlockHandler.ExtractBlocks(lines);
             var story = BlockHandler.ParseBlocks(blocks);
-            SceneLinker.ExpandScenes(story);
             return story;
         }
     }

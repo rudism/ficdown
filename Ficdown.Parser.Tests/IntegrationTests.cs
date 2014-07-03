@@ -1,9 +1,8 @@
 ﻿namespace Ficdown.Parser.Tests
 {
-    using System;
     using System.Linq;
     using System.Text;
-    using ServiceStack.Text;
+    using Player;
     using TestStories;
     using Xunit;
 
@@ -18,7 +17,9 @@
             Assert.NotNull(story);
             Assert.Equal("The Robot King", story.Name);
             Assert.Equal("Robot Cave", story.Scenes[story.FirstScene].First().Name);
-            Console.WriteLine(story.Dump());
+
+            var player = new GameTraverser();
+            player.ExportStaticStory(story, @"C:\Users\Rudis\Desktop\template.html", @"C:\Users\Rudis\Desktop\output");
         }
     }
 }

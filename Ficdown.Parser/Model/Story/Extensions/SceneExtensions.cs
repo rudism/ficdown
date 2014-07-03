@@ -10,7 +10,7 @@
             {
                 Name = scene.Name,
                 Description = scene.Description,
-                Conditions = scene.Conditions == null ? null : new List<string>(scene.Conditions)
+                Conditions = scene.Conditions == null ? null : new Dictionary<string, bool>(scene.Conditions)
             };
         }
     }

@@ -1,4 +1,4 @@
-﻿namespace Ficdown.Parser.Engine
+﻿namespace Ficdown.Parser.Parser
 {
     using System.Collections.Generic;
     using Model.Parser;

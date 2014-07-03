@@ -109,7 +109,7 @@ There is a grand double staircase leading up to the throne room, a hallway strai
 
 You walk into the hall that leads to the living quarters, and find a gate blocking your way. There is a robot scanner installed on the gate. I guess it only opens for robots who live or work here. Maybe the Master Janitor Robot will have a way for you to get through.
 
-- [Go back to the palace entrance.](/palace-entrance#tried-gate)
+[Go back to the palace entrance.](/palace-entrance#tried-gate)
 
 ## Palace Basement
 
@@ -149,19 +149,21 @@ He walks to a box in the corner and pulls out a blue janitor's uniform, then han
 
 The Master Janitor Robot scratches his chin for a moment, then resumes pacing back and forth and muttering to himself.
 
-## [Living Quarters](?)
+## [Living Quarters](?uniform)
 
 You head into the hallway that leads to the living quarters and come to a large gate. A scanner attached to the gate lights up and beeps a few times. After a moment, you hear a click and a soft hiss as the gate opens to let you pass. Once you walk through, the gate hisses and clicks shut behind you.
 
 You notice with some alarm that there's no scanner on the inside of the gate. You don't know how to get back out!
 
-## [Living Quarters](?uniform)
+[Continue...](/living-quarters-2)
+
+## [Living Quarters 2]("Living Quarters")
 
 That's when you realize that you never asked the Master Janitor Bot what your job here was. You just took your uniform and left!
 
 **You have failed to perform your new job because you never found out what it was.**
 
-## [Living Quarters](?uniform&job-started)
+## [Living Quarters 2](?job-started "Living Quarters")
 
 That's no problem though, because you already know what your job is. You continue down the hall, looking at and passing all of the doors until you come to the one marked with a "13." Right next to it is another door labeled "Janitor's Closet."
 

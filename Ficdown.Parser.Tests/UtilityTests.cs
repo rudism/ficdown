@@ -1,11 +1,28 @@
 ﻿namespace Ficdown.Parser.Tests
 {
-    using System.Collections.Generic;
-    using Engine;
+    using System;
+    using Parser;
     using Xunit;
 
     public class UtilityTests
     {
+        [Fact]
+        public void FullAnchorMatches()
+        {
+            Console.WriteLine(RegexLib.Href.ToString());
+            var anchorStr = @"[Link text](/target-scene)";
+            var anchor = RegexLib.Anchors.Match(anchorStr);
+            Assert.Equal(anchorStr, anchor.Groups["anchor"].Value);
+
+            anchorStr = @"[Link text](?condition-state#toggle-state ""Title text"")";
+            anchor = RegexLib.Anchors.Match(anchorStr);
+            Assert.Equal(anchorStr, anchor.Groups["anchor"].Value);
+
+            anchorStr = @"[Link text](""Title text"")";
+            anchor = RegexLib.Anchors.Match(anchorStr);
+            Assert.Equal(anchorStr, anchor.Groups["anchor"].Value);
+        }
+
         [Fact]
         public void AnchorWithTargetMatches()
         {
@@ -46,15 +63,30 @@
             Assert.True(anchor.Success);
             Assert.Equal("Link text", anchor.Groups["text"].Value);
             Assert.Equal("#toggle-1+toggle-2", anchor.Groups["href"].Value);
+
+            anchor = RegexLib.Anchors.Match(@"[Link text](#toggle-1+!toggle-2)");
+            Assert.True(anchor.Success);
+            Assert.Equal("Link text", anchor.Groups["text"].Value);
+            Assert.Equal("#toggle-1+!toggle-2", anchor.Groups["href"].Value);
+        }
+
+        [Fact]
+        public void AnchorsWithTitlesMatch()
+        {
+            var anchor = RegexLib.Anchors.Match(@"[Link text](""Title text"")");
+            Assert.True(anchor.Success);
+            Assert.Equal("Link text", anchor.Groups["text"].Value);
+            Assert.Equal("Title text", anchor.Groups["title"].Value);
         }
 
         [Fact]
         public void ComplexAnchorsMatch()
         {
-            var anchor = RegexLib.Anchors.Match(@"[Link text](/target-scene?condition-state#toggle-state)");
+            var anchor = RegexLib.Anchors.Match(@"[Link text](/target-scene?condition-state#toggle-state ""Title text"")");
             Assert.True(anchor.Success);
             Assert.Equal("Link text", anchor.Groups["text"].Value);
             Assert.Equal("/target-scene?condition-state#toggle-state", anchor.Groups["href"].Value);
+            Assert.Equal("Title text", anchor.Groups["title"].Value);
 
             anchor = RegexLib.Anchors.Match(@"[Link text](/target-scene#toggle-state)");
             Assert.True(anchor.Success);
@@ -75,84 +107,76 @@
         [Fact]
         public void HrefWithTargetParses()
         {
-            string target;
-            IList<string> conditions, toggles;
-            Utilities.ParseHref("/target-scene", out target, out conditions, out toggles);
-            Assert.Equal("target-scene", target);
-            Assert.Null(conditions);
-            Assert.Null(toggles);
+            var anchors = Utilities.ParseAnchors("[Anchor](/target-scene)");
+            Assert.Equal("target-scene", anchors[0].Href.Target);
+            Assert.Null(anchors[0].Href.Conditions);
+            Assert.Null(anchors[0].Href.Toggles);
         }
 
         [Fact]
         public void HrefsWithConditionsParse()
         {
-            string target;
-            IList<string> conditions, toggles;
-            Utilities.ParseHref("?condition-state", out target, out conditions, out toggles);
-            Assert.Null(target);
-            Assert.Equal(1, conditions.Count);
-            Assert.Contains("condition-state", conditions);
-            Assert.Null(toggles);
+            var anchors = Utilities.ParseAnchors("[Anchor](?condition-state)");
+            Assert.Null(anchors[0].Href.Target);
+            Assert.Equal(1, anchors[0].Href.Conditions.Count);
+            Assert.True(anchors[0].Href.Conditions["condition-state"]);
+            Assert.Null(anchors[0].Href.Toggles);
 
-            Utilities.ParseHref("?condition-1&condition-2", out target, out conditions, out toggles);
-            Assert.Null(target);
-            Assert.Equal(2, conditions.Count);
-            Assert.Contains("condition-1", conditions);
-            Assert.Contains("condition-2", conditions);
-            Assert.Null(toggles);
+            anchors = Utilities.ParseAnchors("[Anchor](?condition-1&!condition-2)");
+            Assert.Null(anchors[0].Href.Target);
+            Assert.Equal(2, anchors[0].Href.Conditions.Count);
+            Assert.True(anchors[0].Href.Conditions["condition-1"]);
+            Assert.False(anchors[0].Href.Conditions["condition-2"]);
+            Assert.Null(anchors[0].Href.Toggles);
         }
 
         [Fact]
         public void HrefsWithTogglesParse()
         {
-            string target;
-            IList<string> conditions, toggles;
-            Utilities.ParseHref("#toggle-state", out target, out conditions, out toggles);
-            Assert.Null(target);
-            Assert.Null(conditions);
-            Assert.Equal(1, toggles.Count);
-            Assert.Contains("toggle-state", toggles);
+            var anchors = Utilities.ParseAnchors("[Anchor](#toggle-state)");
+            Assert.Null(anchors[0].Href.Target);
+            Assert.Null(anchors[0].Href.Conditions);
+            Assert.Equal(1, anchors[0].Href.Toggles.Count);
+            Assert.True(anchors[0].Href.Toggles["toggle-state"]);
 
-            Utilities.ParseHref("#toggle-1+toggle-2", out target, out conditions, out toggles);
-            Assert.Null(target);
-            Assert.Null(conditions);
-            Assert.Equal(2, toggles.Count);
-            Assert.Contains("toggle-1", toggles);
-            Assert.Contains("toggle-2", toggles);
+            anchors = Utilities.ParseAnchors("[Anchor](#toggle-1+!toggle-2)");
+            Assert.Null(anchors[0].Href.Target);
+            Assert.Null(anchors[0].Href.Conditions);
+            Assert.Equal(2, anchors[0].Href.Toggles.Count);
+            Assert.True(anchors[0].Href.Toggles["toggle-1"]);
+            Assert.False(anchors[0].Href.Toggles["toggle-2"]);
         }
 
         [Fact]
         public void ComplexHrefsParse()
         {
-            string target;
-            IList<string> conditions, toggles;
-            Utilities.ParseHref("/target-scene?condition-state#toggle-state", out target, out conditions, out toggles);
-            Assert.Equal("target-scene", target);
-            Assert.Equal(1, conditions.Count);
-            Assert.Contains("condition-state", conditions);
-            Assert.Equal(1, toggles.Count);
-            Assert.Contains("toggle-state", toggles);
+            var anchors = Utilities.ParseAnchors("[Anchor](/target-scene?condition-state#toggle-state)");
+            Assert.Equal("target-scene", anchors[0].Href.Target);
+            Assert.Equal(1, anchors[0].Href.Conditions.Count);
+            Assert.True(anchors[0].Href.Conditions["condition-state"]);
+            Assert.Equal(1, anchors[0].Href.Toggles.Count);
+            Assert.True(anchors[0].Href.Toggles["toggle-state"]);
 
-            Utilities.ParseHref("/target-scene?condition-state", out target, out conditions, out toggles);
-            Assert.Equal("target-scene", target);
-            Assert.Equal(1, conditions.Count);
-            Assert.Contains("condition-state", conditions);
-            Assert.Null(toggles);
+            anchors = Utilities.ParseAnchors("[Anchor](/target-scene?condition-state)");
+            Assert.Equal("target-scene", anchors[0].Href.Target);
+            Assert.Equal(1, anchors[0].Href.Conditions.Count);
+            Assert.True(anchors[0].Href.Conditions["condition-state"]);
+            Assert.Null(anchors[0].Href.Toggles);
 
-            Utilities.ParseHref("/target-scene#toggle-state", out target, out conditions, out toggles);
-            Assert.Equal("target-scene", target);
-            Assert.Null(conditions);
-            Assert.Equal(1, toggles.Count);
-            Assert.Contains("toggle-state", toggles);
+            anchors = Utilities.ParseAnchors("[Anchor](/target-scene#toggle-state)");
+            Assert.Equal("target-scene", anchors[0].Href.Target);
+            Assert.Null(anchors[0].Href.Conditions);
+            Assert.Equal(1, anchors[0].Href.Toggles.Count);
+            Assert.True(anchors[0].Href.Toggles["toggle-state"]);
 
-            Utilities.ParseHref("?condition-one&condition-two#toggle-one+toggle-two", out target, out conditions, out toggles);
-            Assert.Null(target);
-            Assert.Equal(2, conditions.Count);
-            Assert.Contains("condition-one", conditions);
-            Assert.Contains("condition-two", conditions);
-            Assert.Equal(2, toggles.Count);
-            Assert.Contains("toggle-one", toggles);
-            Assert.Contains("toggle-two", toggles);
+            anchors = Utilities.ParseAnchors("[Anchor](?condition-one&!condition-two#toggle-one+!toggle-two)");
+            Assert.Null(anchors[0].Href.Target);
+            Assert.Equal(2, anchors[0].Href.Conditions.Count);
+            Assert.True(anchors[0].Href.Conditions["condition-one"]);
+            Assert.False(anchors[0].Href.Conditions["condition-two"]);
+            Assert.Equal(2, anchors[0].Href.Toggles.Count);
+            Assert.True(anchors[0].Href.Toggles["toggle-one"]);
+            Assert.False(anchors[0].Href.Toggles["toggle-two"]);
         }
     }
 }

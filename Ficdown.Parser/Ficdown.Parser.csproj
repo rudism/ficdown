@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MarkdownSharp">
+      <HintPath>..\packages\MarkdownSharp.1.13.0.0\lib\35\MarkdownSharp.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -39,20 +42,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Engine\BlockHandler.cs" />
-    <Compile Include="Engine\IBlockHandler.cs" />
-    <Compile Include="Engine\RegexLib.cs" />
-    <Compile Include="Engine\SceneLinker.cs" />
-    <Compile Include="Engine\Utilities.cs" />
+    <Compile Include="Player\IRenderer.cs" />
+    <Compile Include="Player\MarkdownRenderer.cs" />
+    <Compile Include="Parser\BlockHandler.cs" />
+    <Compile Include="Parser\IBlockHandler.cs" />
+    <Compile Include="Parser\RegexLib.cs" />
+    <Compile Include="Parser\StateResolver.cs" />
+    <Compile Include="Parser\Utilities.cs" />
     <Compile Include="FicDownParser.cs" />
+    <Compile Include="Model\Parser\Anchor.cs" />
     <Compile Include="Model\Parser\Block.cs" />
     <Compile Include="Model\Parser\BlockType.cs" />
-    <Compile Include="Engine\ISceneLinker.cs" />
+    <Compile Include="Parser\IStateResolver.cs" />
+    <Compile Include="Model\Parser\Href.cs" />
+    <Compile Include="Model\Player\PlayerState.cs" />
     <Compile Include="Model\Story\Extensions\SceneExtensions.cs" />
+    <Compile Include="Player\GameTraverser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Model\Story\Action.cs" />
     <Compile Include="Model\Story\Scene.cs" />
     <Compile Include="Model\Story\Story.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

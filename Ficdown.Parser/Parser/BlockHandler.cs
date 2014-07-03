@@ -1,4 +1,4 @@
-﻿namespace Ficdown.Parser.Engine
+﻿namespace Ficdown.Parser.Parser
 {
     using System;
     using System.Collections.Generic;
@@ -40,41 +40,33 @@
         {
             // get the story
             var storyBlock = blocks.Single(b => b.Type == BlockType.Story);
-            var storyName = RegexLib.Anchors.Match(storyBlock.Name);
+            var storyAnchor = Utilities.ParseAnchor(storyBlock.Name);
 
-            string storyTarget;
-            try
-            {
-                Utilities.ParseHref(storyName.Groups["href"].Value, out storyTarget);
-            }
-            catch (FormatException)
-            {
+            if (storyAnchor.Href.Target == null || storyAnchor.Href.Conditions != null ||
+                storyAnchor.Href.Toggles != null)
                 throw new FormatException(string.Format("Story href should only have target: {0}",
-                    storyName.Groups["href"].Value));
-            }
-
-            if (!storyName.Success)
-                throw new FormatException("Story name must link to the first scene.");
+                    storyAnchor.Original));
 
             var story = new Story
             {
-                Name = storyName.Groups["text"].Value,
+                Name = storyAnchor.Text,
                 Description = string.Join("\n", storyBlock.Lines).Trim(),
                 Scenes = new Dictionary<string, IList<Scene>>(),
-                States = new Dictionary<string, IList<Action>>()
+                Actions = new Dictionary<string, Action>()
             };
 
             var scenes = blocks.Where(b => b.Type == BlockType.Scene).Select(BlockToScene);
             foreach (var scene in scenes)
             {
-                var key = Utilities.NormalizeString(scene.Name);
-                if (!story.Scenes.ContainsKey(key)) story.Scenes.Add(key, new List<Scene>());
-                story.Scenes[key].Add(scene);
+                if (!story.Scenes.ContainsKey(scene.Key)) story.Scenes.Add(scene.Key, new List<Scene>());
+                story.Scenes[scene.Key].Add(scene);
             }
+            story.Actions =
+                blocks.Where(b => b.Type == BlockType.Action).Select(BlockToAction).ToDictionary(a => a.State, a => a);
 
-            if (!story.Scenes.ContainsKey(storyTarget))
-                throw new FormatException(string.Format("Story targets non-existent scene: {0}", storyTarget));
-            story.FirstScene = storyTarget;
+            if (!story.Scenes.ContainsKey(storyAnchor.Href.Target))
+                throw new FormatException(string.Format("Story targets non-existent scene: {0}", storyAnchor.Href.Target));
+            story.FirstScene = storyAnchor.Href.Target;
 
             return story;
         }
@@ -87,24 +79,31 @@
                 Description = string.Join("\n", block.Lines).Trim()
             };
 
-            var sceneName = RegexLib.Anchors.Match(block.Name);
-            if (sceneName.Success)
+            try
             {
-                scene.Name = sceneName.Groups["text"].Value.Trim();
-                IList<string> conditions;
-                try
-                {
-                    Utilities.ParseHref(sceneName.Groups["href"].Value, out conditions);
-                }
-                catch (FormatException)
-                {
+                var sceneName = Utilities.ParseAnchor(block.Name);
+                scene.Name = sceneName.Title != null ? sceneName.Title.Trim() : sceneName.Text.Trim();
+                scene.Key = Utilities.NormalizeString(sceneName.Text);
+                if(sceneName.Href.Target != null || sceneName.Href.Toggles != null)
                     throw new FormatException(string.Format("Scene href should only have conditions: {0}", block.Name));
-                }
-                scene.Conditions = conditions;
+                scene.Conditions = sceneName.Href.Conditions;
             }
-            else scene.Name = block.Name;
+            catch(FormatException)
+            {
+                scene.Name = block.Name.Trim();
+                scene.Key = Utilities.NormalizeString(block.Name);
+            }
 
             return scene;
+        }
+
+        private Action BlockToAction(Block block)
+        {
+            return new Action
+            {
+                State = Utilities.NormalizeString(block.Name),
+                Description = string.Join("\n", block.Lines).Trim()
+            };
         }
     }
 }
