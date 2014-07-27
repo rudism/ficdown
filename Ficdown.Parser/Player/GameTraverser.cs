@@ -1,44 +1,62 @@
 ﻿namespace Ficdown.Parser.Player
 {
-    using System.IO;
-    using System.Threading;
+    using System.Collections.Generic;
+    using System.Linq;
     using Model.Story;
+    using Model.Traverser;
+    using Parser;
 
     internal class GameTraverser
     {
-        private IRenderer _renderer;
+        private readonly StateManager _manager;
+        private readonly Queue<PageState> _processingQueue;
+        private readonly IDictionary<string, PageState> _processed;
 
-        public IRenderer Renderer
+        public GameTraverser(Story story)
         {
-            get
-            {
-                return _renderer ??
-                       (_renderer =
-                           new HtmlRenderer {Template = File.ReadAllText(@"C:\Users\Rudis\Desktop\template.html")});
-            }
-            set { _renderer = value; }
+            _manager = new StateManager(story);
+            _processingQueue = new Queue<PageState>();
+            _processed = new Dictionary<string, PageState>();
         }
 
-        private volatile int _page = 0;
-
-        private string _template;
-
-        public void ExportStaticStory(Story story, string templateFile, string outputDirectory)
+        public IEnumerable<PageState> Enumerate()
         {
-            _template = File.ReadAllText(templateFile);
-            var dir = new DirectoryInfo(outputDirectory);
-            if (!dir.Exists) dir.Create();
-            else
+            // generate comprehensive enumeration
+
+            _processingQueue.Enqueue(_manager.InitialState);
+            while (_processingQueue.Count > 0)
             {
-                foreach (var finfo in dir.GetFileSystemInfos())
+                var state = _processingQueue.Dequeue();
+                if (!_processed.ContainsKey(state.UniqueHash))
                 {
-                    finfo.Delete();
+                    _processed.Add(state.UniqueHash, state);
+                    ProcessState(state);
                 }
             }
 
-            var index = string.Format("# {0}\n\n{1}\n\n[Start the game.](page{2}.html)", story.Name,
-                story.Description, _page++);
-            Renderer.Render(index, Path.Combine(outputDirectory, "index.html"));
+            // compress redundancies
+
+
+            return _processed.Values;
+        }
+
+        private void ProcessState(PageState currentState)
+        {
+            var states = new HashSet<string>();
+            foreach (
+                var anchor in
+                    Utilities.ParseAnchors(currentState.Scene.Description)
+                        .Where(a => a.Href.Target != null || a.Href.Toggles != null))
+            {
+                var newState = _manager.ResolveNewState(anchor, currentState);
+                if (!currentState.Links.ContainsKey(anchor.Original))
+                    currentState.Links.Add(anchor.Original, newState.UniqueHash);
+                if (!states.Contains(newState.UniqueHash) && !_processed.ContainsKey(newState.UniqueHash))
+                {
+                    states.Add(newState.UniqueHash);
+                    _processingQueue.Enqueue(newState);
+                }
+            }
         }
     }
 }

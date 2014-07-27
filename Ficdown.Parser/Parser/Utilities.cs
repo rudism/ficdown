@@ -36,8 +36,7 @@ namespace Ficdown.Parser.Parser
                             : null,
                     Toggles =
                         !string.IsNullOrEmpty(tstr)
-                            ? new List<string>(tstr.TrimStart('#').Split('+').Select(t => t.Trim().ToLower()))
-                                .ToDictionary(t => t.TrimStart('!'), t => !t.StartsWith("!"))
+                            ? new List<string>(tstr.TrimStart('#').Split('+').Select(t => t.Trim().ToLower())).ToArray()
                             : null
                 };
             }
@@ -48,29 +47,33 @@ namespace Ficdown.Parser.Parser
         {
             var match = RegexLib.Anchors.Match(anchorText);
             if (!match.Success) throw new FormatException(string.Format("Invalid anchor: {0}", anchorText));
-            var astr = match.Groups["anchor"].Value;
-            var txstr = match.Groups["text"].Value;
-            var ttstr = match.Groups["title"].Value;
-            return new Anchor
-            {
-                Original = !string.IsNullOrEmpty(astr) ? astr : null,
-                Text = !string.IsNullOrEmpty(txstr) ? txstr : null,
-                Title = !string.IsNullOrEmpty(ttstr) ? ttstr : null,
-                Href = ParseHref(match.Groups["href"].Value)
-            };
+            return MatchToAnchor(match);
         }
 
         public static IList<Anchor> ParseAnchors(string text)
         {
             var matches = RegexLib.Anchors.Matches(text);
-            return matches.Cast<Match>().Select(m =>
-                new Anchor
-                {
-                    Original = m.Groups["anchor"].Value,
-                    Text = m.Groups["text"].Value,
-                    Title = m.Groups["title"].Value,
-                    Href = ParseHref(m.Groups["href"].Value)
-                }).ToList();
+            return matches.Cast<Match>().Select(MatchToAnchor).ToList();
+        }
+
+        private static Anchor MatchToAnchor(Match match)
+        {
+            var astr = match.Groups["anchor"].Value;
+            var txstr = match.Groups["text"].Value;
+            var ttstr = match.Groups["title"].Value;
+            var hrefstr = match.Groups["href"].Value;
+            if (hrefstr.StartsWith(@""""))
+            {
+                ttstr = hrefstr.Trim('"');
+                hrefstr = string.Empty;
+            }
+            return new Anchor
+            {
+                Original = !string.IsNullOrEmpty(astr) ? astr : null,
+                Text = !string.IsNullOrEmpty(txstr) ? txstr : null,
+                Title = !string.IsNullOrEmpty(ttstr) ? ttstr : null,
+                Href = ParseHref(hrefstr)
+            };
         }
 
         public static IDictionary<bool, string> ParseConditionalText(string text)
@@ -92,6 +95,11 @@ namespace Ficdown.Parser.Parser
                         .Select(v => string.Format("{0}{1}", v.Value ? null : "!", v.Key))
                         .ToArray())
                 : null;
+        }
+
+        public static string ToHrefString(this IEnumerable<string> values, string separator)
+        {
+            return values != null ? string.Join(separator, values.ToArray()) : null;
         }
 
         public static bool ConditionsMet(IDictionary<string, bool> playerState, IDictionary<string, bool> conditions)

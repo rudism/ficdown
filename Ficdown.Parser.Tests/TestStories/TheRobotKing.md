@@ -101,9 +101,13 @@ There is a grand double staircase leading up to the throne room, a hallway strai
 
 **Where do you want to go?**
 
-- [Go upstairs to the throne room.](/throne-room)
+- [Go upstairs to the throne room.](#throne-room)
 - [Go through the hall to the living quarters.](/living-quarters)
 - [Go downstairs to see the Master Janitor Robot.](/palace-basement)
+
+### Throne Room
+
+You are about to ascend the stairs, but it occurs to you that maybe the King has more important things to do than meet the new janitor right now.
 
 ## Living Quarters
 
@@ -163,7 +167,7 @@ That's when you realize that you never asked the Master Janitor Bot what your jo
 
 **You have failed to perform your new job because you never found out what it was.**
 
-## [Living Quarters 2](?job-started "Living Quarters")
+## [Living Quarters 2](?started-job "Living Quarters")
 
 That's no problem though, because you already know what your job is. You continue down the hall, looking at and passing all of the doors until you come to the one marked with a "13." Right next to it is another door labeled "Janitor's Closet."
 

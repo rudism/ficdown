@@ -55,14 +55,16 @@
                 Actions = new Dictionary<string, Action>()
             };
 
-            var scenes = blocks.Where(b => b.Type == BlockType.Scene).Select(BlockToScene);
+            var sid = 1;
+            var scenes = blocks.Where(b => b.Type == BlockType.Scene).Select(b => BlockToScene(b, sid++));
             foreach (var scene in scenes)
             {
                 if (!story.Scenes.ContainsKey(scene.Key)) story.Scenes.Add(scene.Key, new List<Scene>());
                 story.Scenes[scene.Key].Add(scene);
             }
+            var aid = 1;
             story.Actions =
-                blocks.Where(b => b.Type == BlockType.Action).Select(BlockToAction).ToDictionary(a => a.State, a => a);
+                blocks.Where(b => b.Type == BlockType.Action).Select(b => BlockToAction(b, aid++)).ToDictionary(a => a.Toggle, a => a);
 
             if (!story.Scenes.ContainsKey(storyAnchor.Href.Target))
                 throw new FormatException(string.Format("Story targets non-existent scene: {0}", storyAnchor.Href.Target));
@@ -72,10 +74,11 @@
         }
 
 
-        private Scene BlockToScene(Block block)
+        private Scene BlockToScene(Block block, int id)
         {
             var scene = new Scene
             {
+                Id = id,
                 Description = string.Join("\n", block.Lines).Trim()
             };
 
@@ -97,11 +100,12 @@
             return scene;
         }
 
-        private Action BlockToAction(Block block)
+        private Action BlockToAction(Block block, int id)
         {
             return new Action
             {
-                State = Utilities.NormalizeString(block.Name),
+                Id = id,
+                Toggle = Utilities.NormalizeString(block.Name),
                 Description = string.Join("\n", block.Lines).Trim()
             };
         }

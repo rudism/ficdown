@@ -18,8 +18,8 @@
             Assert.Equal("The Robot King", story.Name);
             Assert.Equal("Robot Cave", story.Scenes[story.FirstScene].First().Name);
 
-            var player = new GameTraverser();
-            player.ExportStaticStory(story, @"C:\Users\Rudis\Desktop\template.html", @"C:\Users\Rudis\Desktop\output");
+            var traverser = new GameTraverser(story);
+            var test = traverser.Enumerate();
         }
     }
 }

@@ -7,6 +7,6 @@
         public string Original { get; set; }
         public string Target { get; set; }
         public IDictionary<string, bool> Conditions { get; set; }
-        public IDictionary<string, bool> Toggles { get; set; }
+        public IEnumerable<string> Toggles { get; set; }
     }
 }

@@ -42,8 +42,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Model\Traverser\PageState.cs" />
     <Compile Include="Player\IRenderer.cs" />
-    <Compile Include="Player\MarkdownRenderer.cs" />
+    <Compile Include="Player\HtmlRenderer.cs" />
     <Compile Include="Parser\BlockHandler.cs" />
     <Compile Include="Parser\IBlockHandler.cs" />
     <Compile Include="Parser\RegexLib.cs" />
@@ -58,6 +59,7 @@
     <Compile Include="Model\Player\PlayerState.cs" />
     <Compile Include="Model\Story\Extensions\SceneExtensions.cs" />
     <Compile Include="Player\GameTraverser.cs" />
+    <Compile Include="Player\StateManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Model\Story\Action.cs" />
     <Compile Include="Model\Story\Scene.cs" />
