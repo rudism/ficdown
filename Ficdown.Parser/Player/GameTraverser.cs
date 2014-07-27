@@ -9,13 +9,13 @@
     internal class GameTraverser
     {
         private readonly StateManager _manager;
-        private readonly Queue<PageState> _processingQueue;
+        private readonly Queue<StateQueueItem> _processingQueue;
         private readonly IDictionary<string, PageState> _processed;
 
         public GameTraverser(Story story)
         {
             _manager = new StateManager(story);
-            _processingQueue = new Queue<PageState>();
+            _processingQueue = new Queue<StateQueueItem>();
             _processed = new Dictionary<string, PageState>();
         }
 
@@ -23,13 +23,18 @@
         {
             // generate comprehensive enumeration
 
-            _processingQueue.Enqueue(_manager.InitialState);
+            var initial = _manager.InitialState;
+            _processingQueue.Enqueue(new StateQueueItem
+            {
+                Page = initial,
+                AffectedStates = new List<State> {initial.AffectedState}
+            });
             while (_processingQueue.Count > 0)
             {
                 var state = _processingQueue.Dequeue();
-                if (!_processed.ContainsKey(state.UniqueHash))
+                if (!_processed.ContainsKey(state.Page.UniqueHash))
                 {
-                    _processed.Add(state.UniqueHash, state);
+                    _processed.Add(state.Page.UniqueHash, state.Page);
                     ProcessState(state);
                 }
             }
@@ -40,21 +45,39 @@
             return _processed.Values;
         }
 
-        private void ProcessState(PageState currentState)
+        private void ProcessState(StateQueueItem currentState)
         {
             var states = new HashSet<string>();
-            foreach (
-                var anchor in
-                    Utilities.ParseAnchors(currentState.Scene.Description)
-                        .Where(a => a.Href.Target != null || a.Href.Toggles != null))
+
+            var anchors = Utilities.ParseAnchors(currentState.Page.Scene.Description);
+            var conditionals =
+                anchors.SelectMany(
+                    a => a.Href.Conditions != null ? a.Href.Conditions.Select(c => c.Key) : new string[] {})
+                    .Distinct()
+                    .ToArray();
+            var hasFirstSeen = RegexLib.BlockQuotes.IsMatch(currentState.Page.Scene.Description);
+
+            foreach (var affected in currentState.AffectedStates)
             {
-                var newState = _manager.ResolveNewState(anchor, currentState);
-                if (!currentState.Links.ContainsKey(anchor.Original))
-                    currentState.Links.Add(anchor.Original, newState.UniqueHash);
+                // signal to previous scenes that this scene's used conditionals are important
+                foreach (var conditional in conditionals) _manager.ToggleStateOn(affected, conditional);
+
+                // signal to previous scenes if this scene has first-seen text
+                if (hasFirstSeen) _manager.ToggleSeenSceneOn(affected, currentState.Page.Scene.Id);
+            }
+
+            foreach (var anchor in anchors.Where(a => a.Href.Target != null || a.Href.Toggles != null))
+            {
+                var newState = _manager.ResolveNewState(anchor, currentState.Page);
+                if (!currentState.Page.Links.ContainsKey(anchor.Original))
+                    currentState.Page.Links.Add(anchor.Original, newState.UniqueHash);
+
                 if (!states.Contains(newState.UniqueHash) && !_processed.ContainsKey(newState.UniqueHash))
                 {
                     states.Add(newState.UniqueHash);
-                    _processingQueue.Enqueue(newState);
+                    var newAffected = new List<State>(currentState.AffectedStates);
+                    newAffected.Add(newState.AffectedState);
+                    _processingQueue.Enqueue(new StateQueueItem {Page = newState, AffectedStates = newAffected});
                 }
             }
         }

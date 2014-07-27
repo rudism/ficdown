@@ -8,10 +8,9 @@
     internal class PageState
     {
         public Guid Id { get; set; }
-        public BitArray PlayerState { get; set; }
-        public BitArray ScenesSeen { get; set; }
-        public BitArray ActionsToShow { get; set; }
         public Scene Scene { get; set; }
+        public State State { get; set; }
+        public State AffectedState { get; set; }
 
         public string Resolved { get; set; }
         public IDictionary<string, string> Links { get; set; }
@@ -23,10 +22,11 @@
             {
                 if (_uniqueHash == null)
                 {
-                    var combined = new bool[PlayerState.Count + ScenesSeen.Count + ActionsToShow.Count];
-                    PlayerState.CopyTo(combined, 0);
-                    ScenesSeen.CopyTo(combined, PlayerState.Count);
-                    ActionsToShow.CopyTo(combined, PlayerState.Count + ScenesSeen.Count);
+                    var combined =
+                        new bool[State.PlayerState.Count + State.ScenesSeen.Count + State.ActionsToShow.Count];
+                    State.PlayerState.CopyTo(combined, 0);
+                    State.ScenesSeen.CopyTo(combined, State.PlayerState.Count);
+                    State.ActionsToShow.CopyTo(combined, State.PlayerState.Count + State.ScenesSeen.Count);
                     var ba = new BitArray(combined);
                     var byteSize = (int) Math.Ceiling(combined.Length/8.0);
                     var encoded = new byte[byteSize];

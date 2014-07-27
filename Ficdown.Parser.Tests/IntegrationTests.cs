@@ -1,8 +1,10 @@
 ﻿namespace Ficdown.Parser.Tests
 {
+    using System;
     using System.Linq;
     using System.Text;
     using Player;
+    using ServiceStack.Text;
     using TestStories;
     using Xunit;
 
@@ -20,6 +22,7 @@
 
             var traverser = new GameTraverser(story);
             var test = traverser.Enumerate();
+            Console.WriteLine(test.Take(10).Dump());
         }
     }
 }

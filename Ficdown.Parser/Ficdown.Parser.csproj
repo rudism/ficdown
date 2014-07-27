@@ -43,6 +43,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\Traverser\PageState.cs" />
+    <Compile Include="Model\Traverser\State.cs" />
+    <Compile Include="Model\Traverser\StateQueueItem.cs" />
     <Compile Include="Player\IRenderer.cs" />
     <Compile Include="Player\HtmlRenderer.cs" />
     <Compile Include="Parser\BlockHandler.cs" />
