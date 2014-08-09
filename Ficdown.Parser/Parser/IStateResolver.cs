@@ -1,9 +1,11 @@
 ﻿namespace Ficdown.Parser.Parser
 {
     using System.Collections.Generic;
+    using Model.Parser;
+    using Model.Traverser;
 
-    public interface IStateResolver
+    internal interface IStateResolver
     {
-        string Resolve(string description, IDictionary<string, bool> playState, bool firstSeen);
+        IEnumerable<ResolvedPage> Resolve(IEnumerable<PageState> pages);
     }
 }

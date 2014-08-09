@@ -59,7 +59,8 @@
                         ScenesSeen = new BitArray(_sceneCount),
                         ActionsToShow = new BitArray(_actionCount)
                     },
-                    Scene = _story.Scenes[_story.FirstScene].Single(s => s.Conditions == null)
+                    Scene = _story.Scenes[_story.FirstScene].Single(s => s.Conditions == null),
+                    StateMatrix = _stateMatrix
                 };
             }
         }
@@ -93,6 +94,30 @@
         public void ToggleSeenSceneOn(State state, int sceneId)
         {
             state.ScenesSeen[sceneId - 1] = true;
+        }
+
+        public static string GetUniqueHash(State state, string sceneKey)
+        {
+            var combined = new bool[state.PlayerState.Count + state.ScenesSeen.Count + state.ActionsToShow.Count];
+            state.PlayerState.CopyTo(combined, 0);
+            state.ScenesSeen.CopyTo(combined, state.PlayerState.Count);
+            state.ActionsToShow.CopyTo(combined, state.PlayerState.Count + state.ScenesSeen.Count);
+            var ba = new BitArray(combined);
+            var byteSize = (int)Math.Ceiling(combined.Length / 8.0);
+            var encoded = new byte[byteSize];
+            ba.CopyTo(encoded, 0);
+            return string.Format("{0}=={1}", sceneKey, Convert.ToBase64String(encoded));
+        }
+
+        public static string GetCompressedHash(PageState page)
+        {
+            var compressed = new State
+            {
+                PlayerState = page.State.PlayerState.And(page.AffectedState.PlayerState),
+                ScenesSeen = page.State.ScenesSeen.And(page.AffectedState.ScenesSeen),
+                ActionsToShow = page.State.ActionsToShow
+            };
+            return GetUniqueHash(compressed, page.Scene.Key);
         }
 
         private Scene GetScene(string target, BitArray playerState)
@@ -138,7 +163,8 @@
                     PlayerState = new BitArray(_stateMatrix.Keys.Count),
                     ScenesSeen = new BitArray(_sceneCount),
                     ActionsToShow = new BitArray(_actionCount)
-                }
+                },
+                StateMatrix = _stateMatrix
             };
         }
     }

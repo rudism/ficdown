@@ -1,7 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-[assembly: InternalsVisibleTo("Ficdown.Parser.Tests")]
-
+﻿
 namespace Ficdown.Parser.Parser
 {
     using System;

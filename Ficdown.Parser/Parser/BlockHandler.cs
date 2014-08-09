@@ -8,7 +8,7 @@
     using Model.Story;
     using Action = Model.Story.Action;
 
-    public class BlockHandler : IBlockHandler
+    internal class BlockHandler : IBlockHandler
     {
         public IEnumerable<Block> ExtractBlocks(IEnumerable<string> lines)
         {

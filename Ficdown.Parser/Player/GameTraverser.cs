@@ -6,17 +6,25 @@
     using Model.Traverser;
     using Parser;
 
-    internal class GameTraverser
+    internal class GameTraverser : IGameTraverser
     {
-        private readonly StateManager _manager;
-        private readonly Queue<StateQueueItem> _processingQueue;
-        private readonly IDictionary<string, PageState> _processed;
+        private StateManager _manager;
+        private Queue<StateQueueItem> _processingQueue;
+        private IDictionary<string, PageState> _processed;
+        private IDictionary<string, PageState> _compressed;
 
-        public GameTraverser(Story story)
+        private Story _story;
+        public Story Story
         {
-            _manager = new StateManager(story);
-            _processingQueue = new Queue<StateQueueItem>();
-            _processed = new Dictionary<string, PageState>();
+            get { return _story; }
+            set
+            {
+                _story = value;
+                _manager = new StateManager(_story);
+                _processingQueue = new Queue<StateQueueItem>();
+                _processed = new Dictionary<string, PageState>();
+                _compressed = new Dictionary<string, PageState>();
+            }
         }
 
         public IEnumerable<PageState> Enumerate()
@@ -40,9 +48,21 @@
             }
 
             // compress redundancies
+            foreach (var row in _processed)
+            {
+                if (!_compressed.ContainsKey(row.Value.CompressedHash))
+                {
+                    var scene = row.Value;
+                    var links = scene.Links.Keys.ToArray();
+                    foreach (var link in links)
+                    {
+                        scene.Links[link] = _processed[scene.Links[link]].CompressedHash;
+                    }
+                    _compressed.Add(row.Value.CompressedHash, row.Value);
+                }
+            }
 
-
-            return _processed.Values;
+            return _compressed.Values;
         }
 
         private void ProcessState(StateQueueItem currentState)
