@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\Parser\ResolvedPage.cs" />
+    <Compile Include="Model\Parser\ResolvedStory.cs" />
     <Compile Include="Model\Player\PageState.cs" />
     <Compile Include="Model\Player\State.cs" />
     <Compile Include="Model\Player\StateQueueItem.cs" />

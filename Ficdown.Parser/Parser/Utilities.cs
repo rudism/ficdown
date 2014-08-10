@@ -105,7 +105,7 @@ namespace Ficdown.Parser.Parser
                 conditions.All(
                     c =>
                         (!c.Value && (!playerState.ContainsKey(c.Key) || !playerState[c.Key])) ||
-                        (playerState.ContainsKey(c.Key) && playerState[c.Key]));
+                        (c.Value && (playerState.ContainsKey(c.Key) && playerState[c.Key])));
         }
     }
 }

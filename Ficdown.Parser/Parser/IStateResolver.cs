@@ -7,6 +7,6 @@
 
     internal interface IStateResolver
     {
-        IEnumerable<ResolvedPage> Resolve(IEnumerable<PageState> pages, Story story);
+        ResolvedStory Resolve(IEnumerable<PageState> pages, Story story);
     }
 }

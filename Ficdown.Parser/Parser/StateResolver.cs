@@ -21,18 +21,23 @@
             _usedNames = new HashSet<string>();
         }
 
-        public IEnumerable<ResolvedPage> Resolve(IEnumerable<PageState> pages, Story story)
+        public ResolvedStory Resolve(IEnumerable<PageState> pages, Story story)
         {
             _story = story;
-            return
-                pages.Select(
+            return new ResolvedStory
+            {
+                Name = story.Name,
+                Description = story.Description,
+                FirstPage = GetPageNameForHash(pages.Single(p => p.Id.Equals(Guid.Empty)).CompressedHash),
+                Pages = pages.Select(
                     page =>
                         new ResolvedPage
                         {
                             Name = GetPageNameForHash(page.CompressedHash),
                             Content = ResolveDescription(page),
                             ActiveToggles = GetStateDictionary(page).Where(t => t.Value).Select(t => t.Key)
-                        }).ToList();
+                        }).ToList()
+            };
         }
 
         private string ResolveAnchor(Anchor anchor, IDictionary<string, bool> playerState, string targetHash)
@@ -63,7 +68,9 @@
                     var actionTuple = _story.Actions.Single(a => a.Value.Id == i + 1);
                     var actionAnchors = Utilities.ParseAnchors(actionTuple.Value.Description);
                     var anchorDict = GetStateDictionary(page);
-                    if (actionAnchors.Any(a => a.Href.Conditions.ContainsKey(actionTuple.Key)))
+                    if (
+                        actionAnchors.Any(
+                            a => a.Href.Conditions != null && a.Href.Conditions.ContainsKey(actionTuple.Key)))
                     {
                         if (page.State.ActionFirstToggles[firstToggleCounter++])
                         {
@@ -95,7 +102,7 @@
             return resolved.ToString();
         }
 
-        private IDictionary<string, bool> GetStateDictionary(PageState page)
+        public static IDictionary<string, bool> GetStateDictionary(PageState page)
         {
             return page.StateMatrix.Where(matrix => page.State.PlayerState[matrix.Value])
                 .ToDictionary(m => m.Key, m => true);

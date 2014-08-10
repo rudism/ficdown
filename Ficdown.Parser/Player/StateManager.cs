@@ -84,7 +84,7 @@
                         newState.State.ActionsToShow[_story.Actions[toggle].Id - 1] = true;
                         if (
                             Utilities.ParseAnchors(_story.Actions[toggle].Description)
-                                .Any(a => a.Href.Conditions.ContainsKey(toggle)))
+                                .Any(a => a.Href.Conditions != null && a.Href.Conditions.ContainsKey(toggle)))
                             actionFirstToggles.Add(!current.State.PlayerState[_stateMatrix[toggle]]);
                     }
                     newState.State.PlayerState[_stateMatrix[toggle]] = true;

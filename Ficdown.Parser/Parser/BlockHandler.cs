@@ -39,7 +39,9 @@
         public Story ParseBlocks(IEnumerable<Block> blocks)
         {
             // get the story
-            var storyBlock = blocks.Single(b => b.Type == BlockType.Story);
+            var storyBlock = blocks.SingleOrDefault(b => b.Type == BlockType.Story);
+            if(storyBlock == null) throw new FormatException("No story block found");
+
             var storyAnchor = Utilities.ParseAnchor(storyBlock.Name);
 
             if (storyAnchor.Href.Target == null || storyAnchor.Href.Conditions != null ||

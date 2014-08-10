@@ -123,6 +123,13 @@
 
             foreach (var anchor in anchors.Where(a => a.Href.Target != null || a.Href.Toggles != null))
             {
+                // don't follow links that would be hidden
+                if (anchor.Href.Conditions != null &&
+                    string.IsNullOrEmpty(
+                        Utilities.ParseConditionalText(anchor.Text)[
+                            Utilities.ConditionsMet(StateResolver.GetStateDictionary(currentState.Page),
+                                anchor.Href.Conditions)])) continue;
+
                 var newState = _manager.ResolveNewState(anchor, currentState.Page);
                 if (!currentState.Page.Links.ContainsKey(anchor.Original))
                     currentState.Page.Links.Add(anchor.Original, newState.UniqueHash);

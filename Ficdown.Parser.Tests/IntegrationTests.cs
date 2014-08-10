@@ -13,7 +13,7 @@
         public void CanParseValidStoryFile()
         {
             var parser = new FicdownParser();
-            var storyText = Encoding.UTF8.GetString(Resources.TheRobotKing);
+            var storyText = Encoding.UTF8.GetString(Resources.CloakOfDarkness);
             var story = parser.ParseStory(storyText);
             var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "itest_output");
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);

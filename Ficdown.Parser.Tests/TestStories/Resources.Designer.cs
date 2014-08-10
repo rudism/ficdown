@@ -63,6 +63,16 @@ namespace Ficdown.Parser.Tests.TestStories {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        internal static byte[] CloakOfDarkness {
+            get {
+                object obj = ResourceManager.GetObject("CloakOfDarkness", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         internal static byte[] TheRobotKing {
             get {
                 object obj = ResourceManager.GetObject("TheRobotKing", resourceCulture);

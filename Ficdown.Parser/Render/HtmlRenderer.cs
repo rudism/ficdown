@@ -1,6 +1,5 @@
 ﻿namespace Ficdown.Parser.Render
 {
-    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using MarkdownSharp;
@@ -16,9 +15,14 @@
             _md = new Markdown();
         }
 
-        public void Render(IEnumerable<ResolvedPage> pages, string outPath, bool debug = false)
+        public void Render(ResolvedStory story, string outPath, bool debug = false)
         {
-            foreach (var page in pages)
+            var index = string.Format("# {0}\n\n{1}\n\n[Click here]({2}.html) to start!", story.Name, story.Description,
+                story.FirstPage);
+
+            File.WriteAllText(Path.Combine(outPath, "index.html"), _md.Transform(index));
+
+            foreach (var page in story.Pages)
             {
                 var content = page.Content;
                 foreach (var anchor in Utilities.ParseAnchors(page.Content))

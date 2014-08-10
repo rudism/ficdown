@@ -32,7 +32,7 @@ namespace Ficdown.Parser
             set { _stateResolver = value; }
         }
 
-        public IEnumerable<ResolvedPage> ParseStory(string storyText)
+        public ResolvedStory ParseStory(string storyText)
         {
             var lines = storyText.Split(new[] {"\n", "\r\n"}, StringSplitOptions.None);
             var blocks = BlockHandler.ExtractBlocks(lines);
