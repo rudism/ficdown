@@ -14,7 +14,6 @@
 
         public IDictionary<string, int> StateMatrix { get; set; }
 
-        public string Resolved { get; set; }
         public IDictionary<string, string> Links { get; set; }
 
         private string _uniqueHash;

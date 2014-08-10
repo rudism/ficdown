@@ -22,7 +22,7 @@
                 File.Delete(file);
             }
             var rend = new HtmlRenderer();
-            rend.Render(story, path);
+            rend.Render(story, path, true);
         }
     }
 }

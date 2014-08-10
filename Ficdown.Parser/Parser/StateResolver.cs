@@ -30,7 +30,8 @@
                         new ResolvedPage
                         {
                             Name = GetPageNameForHash(page.CompressedHash),
-                            Content = ResolveDescription(page)
+                            Content = ResolveDescription(page),
+                            ActiveToggles = GetStateDictionary(page).Where(t => t.Value).Select(t => t.Key)
                         }).ToList();
         }
 
@@ -54,30 +55,44 @@
             var resolved = new StringBuilder();
             resolved.AppendFormat("## {0}\n\n", page.Scene.Name);
 
+            var firstToggleCounter = 0;
             for (var i = 0; i < page.State.ActionsToShow.Count; i++)
             {
                 if (page.State.ActionsToShow[i])
                 {
-                    resolved.AppendFormat("{0}\n\n", _story.Actions.Single(a => a.Value.Id == i + 1).Value.Description);
+                    var actionTuple = _story.Actions.Single(a => a.Value.Id == i + 1);
+                    var actionAnchors = Utilities.ParseAnchors(actionTuple.Value.Description);
+                    var anchorDict = GetStateDictionary(page);
+                    if (actionAnchors.Any(a => a.Href.Conditions.ContainsKey(actionTuple.Key)))
+                    {
+                        if (page.State.ActionFirstToggles[firstToggleCounter++])
+                        {
+                            anchorDict[actionTuple.Key] = false;
+                        }
+                    }
+                    resolved.AppendFormat("{0}\n\n", actionAnchors.Aggregate(actionTuple.Value.Description,
+                        (current, anchor) =>
+                            current.Replace(anchor.Original,
+                                ResolveAnchor(anchor, anchorDict,
+                                    page.Links.ContainsKey(anchor.Original) ? page.Links[anchor.Original] : null))));
                 }
             }
 
-            var text = resolved.Append(page.Scene.Description).ToString();
-
-            var anchors = Utilities.ParseAnchors(text);
-
-            text = RegexLib.EmptyListItem.Replace(anchors.Aggregate(text,
-                (current, anchor) =>
-                    current.Replace(anchor.Original,
-                        ResolveAnchor(anchor, GetStateDictionary(page),
-                            page.Links.ContainsKey(anchor.Original) ? page.Links[anchor.Original] : null))),
-                string.Empty);
-
+            var anchors = Utilities.ParseAnchors(page.Scene.Description);
+            var stateDict = GetStateDictionary(page);
+            var text =
+                RegexLib.EmptyListItem.Replace(
+                    anchors.Aggregate(page.Scene.Description,
+                        (current, anchor) =>
+                            current.Replace(anchor.Original,
+                                ResolveAnchor(anchor, stateDict,
+                                    page.Links.ContainsKey(anchor.Original) ? page.Links[anchor.Original] : null))),
+                    string.Empty);
             var seen = page.State.ScenesSeen[page.Scene.Id - 1];
-            text = !seen
+            resolved.Append(!seen
                 ? RegexLib.BlockQuoteToken.Replace(text, string.Empty)
-                : RegexLib.BlockQuotes.Replace(text, string.Empty);
-            return text;
+                : RegexLib.BlockQuotes.Replace(text, string.Empty));
+            return resolved.ToString();
         }
 
         private IDictionary<string, bool> GetStateDictionary(PageState page)

@@ -51,13 +51,15 @@
                     {
                         PlayerState = new BitArray(_stateMatrix.Keys.Count),
                         ScenesSeen = new BitArray(_sceneCount),
-                        ActionsToShow = new BitArray(_actionCount)
+                        ActionsToShow = new BitArray(_actionCount),
+                        ActionFirstToggles = null
                     },
                     AffectedState = new State
                     {
                         PlayerState = new BitArray(_stateMatrix.Keys.Count),
                         ScenesSeen = new BitArray(_sceneCount),
-                        ActionsToShow = new BitArray(_actionCount)
+                        ActionsToShow = new BitArray(_actionCount),
+                        ActionFirstToggles = null
                     },
                     Scene = _story.Scenes[_story.FirstScene].Single(s => s.Conditions == null),
                     StateMatrix = _stateMatrix
@@ -71,17 +73,26 @@
 
             var newState = ClonePage(current);
             newState.State.ScenesSeen[current.Scene.Id - 1] = true;
+            List<bool> actionFirstToggles = null;
             if (anchor.Href.Toggles != null)
             {
                 foreach (var toggle in anchor.Href.Toggles)
                 {
                     if (_story.Actions.ContainsKey(toggle))
                     {
+                        if(actionFirstToggles == null) actionFirstToggles = new List<bool>();
                         newState.State.ActionsToShow[_story.Actions[toggle].Id - 1] = true;
+                        if (
+                            Utilities.ParseAnchors(_story.Actions[toggle].Description)
+                                .Any(a => a.Href.Conditions.ContainsKey(toggle)))
+                            actionFirstToggles.Add(!current.State.PlayerState[_stateMatrix[toggle]]);
                     }
                     newState.State.PlayerState[_stateMatrix[toggle]] = true;
                 }
             }
+            newState.State.ActionFirstToggles = actionFirstToggles != null
+                ? new BitArray(actionFirstToggles.ToArray())
+                : null;
             newState.Scene = GetScene(target, newState.State.PlayerState);
             return newState;
         }
@@ -98,10 +109,16 @@
 
         public static string GetUniqueHash(State state, string sceneKey)
         {
-            var combined = new bool[state.PlayerState.Count + state.ScenesSeen.Count + state.ActionsToShow.Count];
+            var combined =
+                new bool[
+                    state.PlayerState.Count + state.ScenesSeen.Count + state.ActionsToShow.Count +
+                    (state.ActionFirstToggles != null ? state.ActionFirstToggles.Count : 0)];
             state.PlayerState.CopyTo(combined, 0);
             state.ScenesSeen.CopyTo(combined, state.PlayerState.Count);
             state.ActionsToShow.CopyTo(combined, state.PlayerState.Count + state.ScenesSeen.Count);
+            if (state.ActionFirstToggles != null)
+                state.ActionFirstToggles.CopyTo(combined,
+                    state.PlayerState.Count + state.ScenesSeen.Count + state.ActionsToShow.Count);
             var ba = new BitArray(combined);
             var byteSize = (int)Math.Ceiling(combined.Length / 8.0);
             var encoded = new byte[byteSize];
@@ -115,7 +132,8 @@
             {
                 PlayerState = page.State.PlayerState.And(page.AffectedState.PlayerState),
                 ScenesSeen = page.State.ScenesSeen.And(page.AffectedState.ScenesSeen),
-                ActionsToShow = page.State.ActionsToShow
+                ActionsToShow = page.State.ActionsToShow,
+                ActionFirstToggles = page.State.ActionFirstToggles
             };
             return GetUniqueHash(compressed, page.Scene.Key);
         }

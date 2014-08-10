@@ -7,5 +7,6 @@
         public BitArray PlayerState { get; set; }
         public BitArray ScenesSeen { get; set; }
         public BitArray ActionsToShow { get; set; }
+        public BitArray ActionFirstToggles { get; set; }
     }
 }

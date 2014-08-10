@@ -49,6 +49,24 @@
                 }
             }
 
+            // make sure every page gets affected data on every page that it links to
+            foreach (var pageTuple in _processed)
+            {
+                foreach (var linkTuple in pageTuple.Value.Links)
+                {
+                    for (var i = 0; i < _processed[linkTuple.Value].AffectedState.PlayerState.Count; i++)
+                    {
+                        pageTuple.Value.AffectedState.PlayerState[i] |=
+                            _processed[linkTuple.Value].AffectedState.PlayerState[i];
+                    }
+                    for (var i = 0; i < _processed[linkTuple.Value].AffectedState.ScenesSeen.Count; i++)
+                    {
+                        pageTuple.Value.AffectedState.ScenesSeen[i] |=
+                            _processed[linkTuple.Value].AffectedState.ScenesSeen[i];
+                    }
+                }
+            }
+
             // compress redundancies
             foreach (var row in _processed)
             {
