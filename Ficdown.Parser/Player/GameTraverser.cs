@@ -2,8 +2,8 @@
 {
     using System.Collections.Generic;
     using System.Linq;
+    using Model.Player;
     using Model.Story;
-    using Model.Traverser;
     using Parser;
 
     internal class GameTraverser : IGameTraverser
@@ -12,6 +12,7 @@
         private Queue<StateQueueItem> _processingQueue;
         private IDictionary<string, PageState> _processed;
         private IDictionary<string, PageState> _compressed;
+        private IDictionary<int, Action> _actionMatrix;
 
         private Story _story;
         public Story Story
@@ -20,6 +21,7 @@
             set
             {
                 _story = value;
+                _actionMatrix = _story.Actions.ToDictionary(a => a.Value.Id, a => a.Value);
                 _manager = new StateManager(_story);
                 _processingQueue = new Queue<StateQueueItem>();
                 _processed = new Dictionary<string, PageState>();
@@ -65,11 +67,23 @@
             return _compressed.Values;
         }
 
+        private IEnumerable<Action> GetActionsForPage(PageState page)
+        {
+            var actions = new List<Action>();
+            for (var i = 0; i < page.State.ActionsToShow.Count; i++)
+            {
+                if (page.State.ActionsToShow[i]) actions.Add(_actionMatrix[i + 1]);
+            }
+            return actions;
+        }
+
         private void ProcessState(StateQueueItem currentState)
         {
             var states = new HashSet<string>();
 
-            var anchors = Utilities.ParseAnchors(currentState.Page.Scene.Description);
+            var anchors = Utilities.ParseAnchors(currentState.Page.Scene.Description).ToList();
+            foreach (var action in GetActionsForPage(currentState.Page))
+                anchors.AddRange(Utilities.ParseAnchors(action.Description));
             var conditionals =
                 anchors.SelectMany(
                     a => a.Href.Conditions != null ? a.Href.Conditions.Select(c => c.Key) : new string[] {})
@@ -80,6 +94,9 @@
             foreach (var affected in currentState.AffectedStates)
             {
                 // signal to previous scenes that this scene's used conditionals are important
+                if(currentState.Page.Scene.Conditions != null)
+                    foreach (var conditional in currentState.Page.Scene.Conditions)
+                        _manager.ToggleStateOn(affected, conditional.Key);
                 foreach (var conditional in conditionals) _manager.ToggleStateOn(affected, conditional);
 
                 // signal to previous scenes if this scene has first-seen text

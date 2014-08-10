@@ -43,9 +43,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\Parser\ResolvedPage.cs" />
-    <Compile Include="Model\Traverser\PageState.cs" />
-    <Compile Include="Model\Traverser\State.cs" />
-    <Compile Include="Model\Traverser\StateQueueItem.cs" />
+    <Compile Include="Model\Player\PageState.cs" />
+    <Compile Include="Model\Player\State.cs" />
+    <Compile Include="Model\Player\StateQueueItem.cs" />
     <Compile Include="Parser\BlockHandler.cs" />
     <Compile Include="Parser\IBlockHandler.cs" />
     <Compile Include="Parser\RegexLib.cs" />
@@ -66,6 +66,8 @@
     <Compile Include="Model\Story\Action.cs" />
     <Compile Include="Model\Story\Scene.cs" />
     <Compile Include="Model\Story\Story.cs" />
+    <Compile Include="Render\HtmlRenderer.cs" />
+    <Compile Include="Render\IRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

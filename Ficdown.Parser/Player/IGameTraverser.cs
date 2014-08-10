@@ -1,8 +1,8 @@
 ﻿namespace Ficdown.Parser.Player
 {
     using System.Collections.Generic;
+    using Model.Player;
     using Model.Story;
-    using Model.Traverser;
 
     internal interface IGameTraverser
     {

@@ -1,4 +1,4 @@
-﻿namespace Ficdown.Parser.Model.Traverser
+﻿namespace Ficdown.Parser.Model.Player
 {
     using System.Collections;
 

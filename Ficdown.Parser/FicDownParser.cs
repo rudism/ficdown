@@ -36,8 +36,9 @@ namespace Ficdown.Parser
         {
             var lines = storyText.Split(new[] {"\n", "\r\n"}, StringSplitOptions.None);
             var blocks = BlockHandler.ExtractBlocks(lines);
-            GameTraverser.Story = BlockHandler.ParseBlocks(blocks);
-            return StateResolver.Resolve(GameTraverser.Enumerate());
+            var story = BlockHandler.ParseBlocks(blocks);
+            GameTraverser.Story = story;
+            return StateResolver.Resolve(GameTraverser.Enumerate(), story);
         }
     }
 }

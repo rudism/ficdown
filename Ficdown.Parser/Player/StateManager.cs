@@ -5,8 +5,8 @@
     using System.Collections.Generic;
     using System.Linq;
     using Model.Parser;
+    using Model.Player;
     using Model.Story;
-    using Model.Traverser;
     using Parser;
 
     internal class StateManager

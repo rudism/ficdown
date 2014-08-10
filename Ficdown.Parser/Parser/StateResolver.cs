@@ -5,13 +5,15 @@
     using System.Linq;
     using System.Text;
     using Model.Parser;
-    using Model.Traverser;
+    using Model.Player;
+    using Model.Story;
 
     internal class StateResolver : IStateResolver
     {
         private static readonly Random _random = new Random((int) DateTime.Now.Ticks);
         private readonly IDictionary<string, string> _pageNames;
         private readonly HashSet<string> _usedNames;
+        private Story _story;
 
         public StateResolver()
         {
@@ -19,8 +21,9 @@
             _usedNames = new HashSet<string>();
         }
 
-        public IEnumerable<ResolvedPage> Resolve(IEnumerable<PageState> pages)
+        public IEnumerable<ResolvedPage> Resolve(IEnumerable<PageState> pages, Story story)
         {
+            _story = story;
             return
                 pages.Select(
                     page =>
@@ -48,11 +51,22 @@
 
         private string ResolveDescription(PageState page)
         {
-            var resolved = page.Scene.Description;
+            var resolved = new StringBuilder();
+            resolved.AppendFormat("## {0}\n\n", page.Scene.Name);
 
-            var anchors = Utilities.ParseAnchors(resolved);
+            for (var i = 0; i < page.State.ActionsToShow.Count; i++)
+            {
+                if (page.State.ActionsToShow[i])
+                {
+                    resolved.AppendFormat("{0}\n\n", _story.Actions.Single(a => a.Value.Id == i + 1).Value.Description);
+                }
+            }
 
-            resolved = RegexLib.EmptyListItem.Replace(anchors.Aggregate(resolved,
+            var text = resolved.Append(page.Scene.Description).ToString();
+
+            var anchors = Utilities.ParseAnchors(text);
+
+            text = RegexLib.EmptyListItem.Replace(anchors.Aggregate(text,
                 (current, anchor) =>
                     current.Replace(anchor.Original,
                         ResolveAnchor(anchor, GetStateDictionary(page),
@@ -60,10 +74,10 @@
                 string.Empty);
 
             var seen = page.State.ScenesSeen[page.Scene.Id - 1];
-            resolved = !seen
-                ? RegexLib.BlockQuoteToken.Replace(resolved, string.Empty)
-                : RegexLib.BlockQuotes.Replace(resolved, string.Empty);
-            return resolved;
+            text = !seen
+                ? RegexLib.BlockQuoteToken.Replace(text, string.Empty)
+                : RegexLib.BlockQuotes.Replace(text, string.Empty);
+            return text;
         }
 
         private IDictionary<string, bool> GetStateDictionary(PageState page)

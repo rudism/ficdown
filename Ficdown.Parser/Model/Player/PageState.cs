@@ -1,4 +1,4 @@
-﻿namespace Ficdown.Parser.Model.Traverser
+﻿namespace Ficdown.Parser.Model.Player
 {
     using System;
     using System.Collections.Generic;
@@ -12,7 +12,7 @@
         public State State { get; set; }
         public State AffectedState { get; set; }
 
-        public IDictionary<string, int> StateMatrix { get; set; } 
+        public IDictionary<string, int> StateMatrix { get; set; }
 
         public string Resolved { get; set; }
         public IDictionary<string, string> Links { get; set; }
