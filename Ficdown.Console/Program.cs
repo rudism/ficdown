@@ -1,0 +1,153 @@
+﻿namespace Ficdown.Console
+{
+    using System;
+    using System.IO;
+    using Microsoft.SqlServer.Server;
+    using Parser;
+    using Parser.Render;
+
+    internal class Program
+    {
+        private static void Main(string[] args)
+        {
+            string infile = null;
+            string output = null;
+            string tempdir = null;
+            string format = null;
+            string author = null;
+            var debug = false;
+
+            if (args.Length == 1)
+            {
+                if (args[0] == "/?" || args[0] == "/help" || args[0] == "-help" || args[0] == "--help")
+                {
+                    ShowHelp();
+                }
+            }
+            else if (args.Length > 1)
+            {
+                for (var i = 0; i < args.Length; i += 2)
+                {
+                    switch (args[i])
+                    {
+                        case "--format":
+                            format = args[i + 1];
+                            break;
+                        case "--in":
+                            infile = args[i + 1];
+                            break;
+                        case "--out":
+                            output = args[i + 1];
+                            break;
+                        case "--template":
+                            tempdir = args[i + 1];
+                            break;
+                        case "--author":
+                            author = args[i + 1];
+                            break;
+                        case "--debug":
+                            i--;
+                            debug = true;
+                            break;
+                        default:
+                            Console.WriteLine(@"Unknown option: {0}", args[i]);
+                            return;
+                    }
+                }
+            }
+            else
+            {
+                ShowHelp();
+            }
+            if (string.IsNullOrWhiteSpace(format))
+            {
+                ShowHelp();
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(infile) || !File.Exists(infile))
+            {
+                Console.WriteLine(@"Source file {0} not found.", infile);
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(output))
+                if (format == "html")
+                    output = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"html");
+                else if (format == "epub")
+                    output = "output.epub";
+
+            if (!string.IsNullOrWhiteSpace(output) && (Directory.Exists(output) || File.Exists(output)))
+            {
+                Console.WriteLine(@"Specified output {0} already exists.", output);
+                return;
+            }
+            if (!string.IsNullOrWhiteSpace(tempdir))
+            {
+                if (!Directory.Exists(tempdir))
+                {
+                    Console.WriteLine(@"Template directory {0} does not exist.", tempdir);
+                    return;
+                }
+                if (!File.Exists(Path.Combine(tempdir, "index.html")) ||
+                    !File.Exists(Path.Combine(tempdir, "scene.html")) ||
+                    !File.Exists(Path.Combine(tempdir, "styles.css")))
+                {
+                    Console.WriteLine(
+                        @"Template directory must contain ""index.html"", ""scene.html"", and ""style.css"" files.");
+                }
+            }
+
+            var parser = new FicdownParser();
+            var storyText = File.ReadAllText(infile);
+
+            Console.WriteLine(@"Parsing story...");
+
+            var story = parser.ParseStory(storyText);
+
+            IRenderer rend;
+            switch (format)
+            {
+                case "html":
+                    Directory.CreateDirectory(output);
+                    rend = (string.IsNullOrWhiteSpace(tempdir)
+                        ? new HtmlRenderer()
+                        : new HtmlRenderer(File.ReadAllText(Path.Combine(tempdir, "index.html")),
+                            File.ReadAllText(Path.Combine(tempdir, "scene.html")),
+                            File.ReadAllText(Path.Combine(tempdir, "styles.css"))));
+                    break;
+                case "epub":
+                    if (string.IsNullOrWhiteSpace(author))
+                    {
+                        Console.WriteLine(@"Epub format requires the --author argument.");
+                        return;
+                    }
+                    rend = (string.IsNullOrWhiteSpace(tempdir)
+                        ? new EpubRenderer(author)
+                        : new EpubRenderer(author, File.ReadAllText(Path.Combine(tempdir, "index.html")),
+                            File.ReadAllText(Path.Combine(tempdir, "scene.html")),
+                            File.ReadAllText(Path.Combine(tempdir, "styles.css"))));
+                    break;
+                default:
+                    ShowHelp();
+                    return;
+            }
+
+            Console.WriteLine(@"Rendering story...");
+
+            rend.Render(story, output, debug);
+
+            Console.WriteLine(@"Done.");
+        }
+
+        private static void ShowHelp()
+        {
+            Console.WriteLine(
+                @"Usage: ficdown.exe
+    --format (html|epub)
+    --in ""/path/to/source.md""
+    [--out ""/path/to/output""]
+    [--template ""/path/to/template/dir""]
+    [--author ""Author Name""
+    [--debug]");
+        }
+    }
+}

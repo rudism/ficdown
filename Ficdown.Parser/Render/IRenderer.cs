@@ -2,7 +2,7 @@
 {
     using Model.Parser;
 
-    internal interface IRenderer
+    public interface IRenderer
     {
         void Render(ResolvedStory story, string outPath, bool debug);
     }

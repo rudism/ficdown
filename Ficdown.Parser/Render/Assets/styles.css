@@ -1,0 +1,82 @@
+﻿/* Adapted from http://wiki.mobileread.com/wiki/CSS_template */
+
+@page {
+    margin-top: 30px;
+    margin-bottom: 20px;
+}
+
+body {
+    margin-right: 30px;
+    margin-left: 30px;
+    padding: 0;
+}
+
+img {
+    max-width: 100%;
+    oeb-column-number: 1;
+    display: inline-block;
+}
+
+a {
+    font-style: italic;
+    color: #009;
+    text-decoration: none;
+}
+
+h1.title {
+    font-family: Verdana, Geneva, sans-serif;
+    font-size: x-large;
+    text-align: center;
+    font-weight: bold;
+    color: #000;
+    margin-top: 2em;
+    text-indent: 0;
+    -webkit-hyphens: none;
+    -moz-hyphens: none;
+    hyphens: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+    -webkit-hyphenate-lines: 0 !important;
+    -webkit-hyphens: none !important;
+    adobe-hyphenate: none !important;
+    -moz-hyphens: none !important;
+    hyphens: none !important;
+    hyphenate-lines: 0;
+    color: #000;
+}
+
+h1 + p, h2 + p {
+    text-indent: 0;
+}
+
+p {
+    line-height: 1.5em;
+    text-align: justify;
+    widows: 2;
+    orphans: 2;
+    margin: 1em 0 0 0;
+    text-indent: 2em;
+    -webkit-hyphenate-before: 3;
+    hyphenate-before: 3;
+    -webkit-hyphenate-after: 3;
+    hyphenate-after: 3;
+    -webkit-hyphenate-lines: 2;
+    hyphenate-lines: 2;
+}
+
+ol {
+    margin: 1em 0 1em 0;
+}
+
+ul {
+    margin: 1em 0 1em 0;
+}
+
+li {
+    line-height: 1.5em;
+    orphans: 2;
+    widows: 2;
+    text-align: justify;
+}
