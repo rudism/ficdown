@@ -15,11 +15,6 @@
             _author = author;
         }
 
-        public EpubRenderer(string author, string index, string scene, string styles) : base(index, scene, styles)
-        {
-            _author = author;
-        }
-
         public override void Render(Model.Parser.ResolvedStory story, string outPath, bool debug = false)
         {
             var temppath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
@@ -38,6 +33,18 @@
 
             var epub = new Epub(Story.Name, _author, chapters);
             epub.AddResourceFile(new ResourceFile("styles.css", Path.Combine(temppath, "styles.css"), "text/css"));
+
+            if (!string.IsNullOrWhiteSpace(ImageDir))
+            {
+                var dirname = ImageDir.Substring(ImageDir.LastIndexOf(Path.DirectorySeparatorChar) + 1);
+                var tempimgdir = Path.Combine(temppath, dirname);
+                foreach (var img in Directory.GetFiles(tempimgdir))
+                {
+                    var fname = Path.GetFileName(img);
+                    epub.AddResourceFile(new ResourceFile(fname,
+                        Path.Combine(tempimgdir, fname), MimeHelper.GetMimeType(img)));
+                }
+            }
 
             var builder = new EPubBuilder();
             var built = builder.Build(epub);

@@ -11,25 +11,16 @@
     {
         protected readonly Markdown Markdown;
 
-        private string _index;
-        private string _scene;
-        private string _styles;
+        public string IndexTemplate { get; set; }
+        public string SceneTemplate { get; set; }
+        public string StylesTemplate { get; set; }
+        public string ImageDir { get; set; }
 
         protected ResolvedStory Story { get; set; }
 
         public HtmlRenderer()
         {
             Markdown = new Markdown();
-            _index = Template.Index;
-            _scene = Template.Scene;
-            _styles = Template.Styles;
-        }
-
-        public HtmlRenderer(string index, string scene, string styles)
-        {
-            _index = index;
-            _scene = scene;
-            _styles = styles;
         }
 
         public virtual void Render(ResolvedStory story, string outPath, bool debug = false)
@@ -46,7 +37,7 @@
 
         protected void GenerateHtml(ResolvedStory story, string outPath, bool debug)
         {
-            var index = FillTemplate(_index, new Dictionary<string, string>
+            var index = FillTemplate(IndexTemplate ?? Template.Index, new Dictionary<string, string>
             {
                 {"Title", story.Name},
                 {"Description", Markdown.Transform(story.Description)},
@@ -57,7 +48,7 @@
 
             foreach (var page in story.Pages)
             {
-                File.WriteAllText(Path.Combine(outPath, "styles.css"), _styles);
+                File.WriteAllText(Path.Combine(outPath, "styles.css"), StylesTemplate ?? Template.Styles);
 
                 var content = page.Content;
                 foreach (var anchor in Utilities.ParseAnchors(page.Content))
@@ -71,7 +62,7 @@
                         string.Join("\n", page.ActiveToggles.Select(t => string.Format("- {0}", t)).ToArray()));
                 }
 
-                var scene = FillTemplate(_scene, new Dictionary<string, string>
+                var scene = FillTemplate(SceneTemplate ?? Template.Scene, new Dictionary<string, string>
                 {
                     {"Title", story.Name},
                     {"Content", Markdown.Transform(content)}
@@ -79,6 +70,22 @@
 
                 File.WriteAllText(Path.Combine(outPath, string.Format("{0}.html", page.Name)), scene);
             }
+
+            if (!string.IsNullOrWhiteSpace(ImageDir))
+            {
+                var dirname = ImageDir.Substring(ImageDir.LastIndexOf(Path.DirectorySeparatorChar) + 1);
+                Directory.CreateDirectory(Path.Combine(outPath, dirname));
+                CopyFilesRecursively(ImageDir, Path.Combine(outPath, dirname));
+            }
+        }
+
+        private static void CopyFilesRecursively(string sourcePath, string destinationPath)
+        {
+            foreach (var dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
+                Directory.CreateDirectory(dirPath.Replace(sourcePath, destinationPath));
+
+            foreach (var newPath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
+                File.Copy(newPath, newPath.Replace(sourcePath, destinationPath));
         }
     }
 }

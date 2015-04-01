@@ -15,6 +15,7 @@
             string tempdir = null;
             string format = null;
             string author = null;
+            string images = null;
             var debug = false;
 
             if (args.Length == 1)
@@ -44,6 +45,9 @@
                             break;
                         case "--author":
                             author = args[i + 1];
+                            break;
+                        case "--images":
+                            images = args[i + 1];
                             break;
                         case "--debug":
                             i--;
@@ -96,6 +100,12 @@
                 }
             }
 
+            if (!string.IsNullOrWhiteSpace(images) && !Directory.Exists(images))
+            {
+                Console.WriteLine(@"Images directory {0} does not exist.", images);
+                return;
+            }
+
             var parser = new FicdownParser();
             var storyText = File.ReadAllText(infile);
 
@@ -108,11 +118,7 @@
             {
                 case "html":
                     Directory.CreateDirectory(output);
-                    rend = (string.IsNullOrWhiteSpace(tempdir)
-                        ? new HtmlRenderer()
-                        : new HtmlRenderer(File.ReadAllText(Path.Combine(tempdir, "index.html")),
-                            File.ReadAllText(Path.Combine(tempdir, "scene.html")),
-                            File.ReadAllText(Path.Combine(tempdir, "styles.css"))));
+                    rend = new HtmlRenderer();
                     break;
                 case "epub":
                     if (string.IsNullOrWhiteSpace(author))
@@ -120,16 +126,21 @@
                         Console.WriteLine(@"Epub format requires the --author argument.");
                         return;
                     }
-                    rend = (string.IsNullOrWhiteSpace(tempdir)
-                        ? new EpubRenderer(author)
-                        : new EpubRenderer(author, File.ReadAllText(Path.Combine(tempdir, "index.html")),
-                            File.ReadAllText(Path.Combine(tempdir, "scene.html")),
-                            File.ReadAllText(Path.Combine(tempdir, "styles.css"))));
+                    rend = new EpubRenderer(author);
                     break;
                 default:
                     ShowHelp();
                     return;
             }
+
+            if (!string.IsNullOrWhiteSpace(tempdir))
+            {
+                rend.IndexTemplate = File.ReadAllText(Path.Combine(tempdir, "index.html"));
+                rend.SceneTemplate = File.ReadAllText(Path.Combine(tempdir, "scene.html"));
+                rend.StylesTemplate = File.ReadAllText(Path.Combine(tempdir, "styles.css"));
+            };
+
+            if (!string.IsNullOrWhiteSpace(images)) rend.ImageDir = images;
 
             Console.WriteLine(@"Rendering story...");
 
@@ -137,6 +148,7 @@
 
             Console.WriteLine(@"Done.");
         }
+
 
         private static void ShowHelp()
         {
@@ -146,7 +158,8 @@
     --in ""/path/to/source.md""
     [--out ""/path/to/output""]
     [--template ""/path/to/template/dir""]
-    [--author ""Author Name""
+    [--images ""/path/to/images/dir""]
+    [--author ""Author Name""]
     [--debug]");
         }
     }

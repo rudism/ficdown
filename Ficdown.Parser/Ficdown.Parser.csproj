@@ -76,6 +76,7 @@
     <Compile Include="Render\EpubRenderer.cs" />
     <Compile Include="Render\HtmlRenderer.cs" />
     <Compile Include="Render\IRenderer.cs" />
+    <Compile Include="Render\MimeHelper.cs" />
     <Compile Include="Render\Template.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
