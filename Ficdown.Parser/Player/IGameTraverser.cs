@@ -8,5 +8,7 @@
     {
         Story Story { get; set; }
         IEnumerable<PageState> Enumerate();
+        IEnumerable<Scene> OrphanedScenes { get; }
+        IEnumerable<Action> OrphanedActions { get; }
     }
 }

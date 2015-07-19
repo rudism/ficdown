@@ -1,10 +1,12 @@
 ﻿namespace Ficdown.Parser.Player
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using Model.Player;
     using Model.Story;
     using Parser;
+    using Action = Model.Story.Action;
 
     internal class GameTraverser : IGameTraverser
     {
@@ -13,6 +15,7 @@
         private IDictionary<string, PageState> _processed;
         private IDictionary<string, PageState> _compressed;
         private IDictionary<int, Action> _actionMatrix;
+        private bool _wasRun = false;
 
         private Story _story;
         public Story Story
@@ -29,8 +32,29 @@
             }
         }
 
+        public IEnumerable<Scene> OrphanedScenes
+        {
+            get
+            {
+                if(!_wasRun) throw new Exception("Call Enumerate() before getting orphans");
+                return _story.Scenes.SelectMany(l => l.Value, (l, s) => s).Where(s => !s.Visited);
+            }
+        }
+
+        public IEnumerable<Action> OrphanedActions
+        {
+            get
+            {
+                if(!_wasRun) throw new Exception("Call Enumerate() before getting orphans");
+                return _actionMatrix.Values.Where(a => !a.Visited);
+            }
+        }
+
         public IEnumerable<PageState> Enumerate()
         {
+            if(_wasRun) throw new Exception("Can't call Enumerate() more than once");
+            _wasRun = true;
+
             // generate comprehensive enumeration
 
             var initial = _manager.InitialState;
@@ -97,11 +121,16 @@
 
         private void ProcessState(StateQueueItem currentState)
         {
+            currentState.Page.Scene.Visited = true;
+
             var states = new HashSet<string>();
 
             var anchors = Utilities.GetInstance(currentState.Page.Scene.Name, currentState.Page.Scene.LineNumber).ParseAnchors(currentState.Page.Scene.Description).ToList();
             foreach (var action in GetActionsForPage(currentState.Page))
+            {
+                action.Visited = true;
                 anchors.AddRange(Utilities.GetInstance(action.Toggle, action.LineNumber).ParseAnchors(action.Description));
+            }
             var conditionals =
                 anchors.SelectMany(
                     a => a.Href.Conditions != null ? a.Href.Conditions.Select(c => c.Key) : new string[] {})

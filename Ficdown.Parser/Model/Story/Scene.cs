@@ -10,5 +10,6 @@
         public string Description { get; set; }
         public IDictionary<string, bool> Conditions { get; set; }
         public int LineNumber { get; set; }
+        public bool Visited { get; set; }
     }
 }

@@ -4,6 +4,7 @@
 namespace Ficdown.Parser
 {
     using System;
+    using System.Linq;
     using System.Collections.Generic;
     using Model.Parser;
     using Parser;
@@ -38,7 +39,19 @@ namespace Ficdown.Parser
             var blocks = BlockHandler.ExtractBlocks(lines);
             var story = BlockHandler.ParseBlocks(blocks);
             GameTraverser.Story = story;
-            return StateResolver.Resolve(GameTraverser.Enumerate(), story);
+            var resolved = StateResolver.Resolve(GameTraverser.Enumerate(), story);
+            resolved.Orphans = GameTraverser.OrphanedScenes.Select(o => new Orphan
+            {
+                Type = "Scene",
+                Name = o.Name,
+                LineNumber = o.LineNumber
+            }).Union(GameTraverser.OrphanedActions.Select(o => new Orphan
+            {
+                Type = "Action",
+                Name = o.Toggle,
+                LineNumber = o.LineNumber
+            }));
+            return resolved;
         }
     }
 }

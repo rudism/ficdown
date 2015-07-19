@@ -84,6 +84,7 @@
     <Compile Include="Model\Parser\Line.cs" />
     <Compile Include="Model\Parser\FicdownException.cs" />
     <Compile Include="Parser\ParserExtensions.cs" />
+    <Compile Include="Model\Parser\Orphan.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

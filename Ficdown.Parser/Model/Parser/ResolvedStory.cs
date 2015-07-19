@@ -8,5 +8,6 @@
         public string Description { get; set; }
         public string FirstPage { get; set; }
         public IEnumerable<ResolvedPage> Pages { get; set; }
+        public IEnumerable<Orphan> Orphans { get; set; }
     }
 }

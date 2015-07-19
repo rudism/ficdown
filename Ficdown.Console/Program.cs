@@ -1,6 +1,7 @@
 ﻿namespace Ficdown.Console
 {
     using System;
+    using System.Linq;
     using System.IO;
     using Microsoft.SqlServer.Server;
     using Parser;
@@ -114,6 +115,11 @@
             Console.WriteLine(@"Parsing story...");
 
             var story = parser.ParseStory(storyText);
+
+            story.Orphans.ToList().ForEach(o =>
+            {
+                Console.Error.WriteLine("Warning (line {0}): {1} {2} is unreachable", o.LineNumber, o.Type, o.Name);
+            });
 
             IRenderer rend;
             switch (format)
