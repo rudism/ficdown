@@ -7,14 +7,34 @@ namespace Ficdown.Parser.Parser
     using System.Text.RegularExpressions;
     using Model.Parser;
 
-    internal static class Utilities
+    internal class Utilities
     {
-        public static string NormalizeString(string raw)
+        public static Utilities GetInstance(string blockName, int lineNumber)
+        {
+            return new Utilities
+            {
+                _blockName = blockName,
+                _lineNumber = lineNumber
+            };
+        }
+
+        public static Utilities GetInstance(string blockName)
+        {
+            return new Utilities
+            {
+                _blockName = blockName
+            };
+        }
+
+        protected string _blockName;
+        protected int? _lineNumber;
+
+        public string NormalizeString(string raw)
         {
             return Regex.Replace(Regex.Replace(raw.ToLower(), @"^\W+|\W+$", string.Empty), @"\W+", "-");
         }
 
-        private static Href ParseHref(string href)
+        private Href ParseHref(string href)
         {
             var match = RegexLib.Href.Match(href);
             if (match.Success)
@@ -37,23 +57,23 @@ namespace Ficdown.Parser.Parser
                             : null
                 };
             }
-            throw new FormatException(string.Format("Invalid href: {0}", href));
+            throw new FicdownException(_blockName, _lineNumber, string.Format("Invalid href: {0}", href));
         }
 
-        public static Anchor ParseAnchor(string anchorText)
+        public Anchor ParseAnchor(string anchorText)
         {
             var match = RegexLib.Anchors.Match(anchorText);
-            if (!match.Success) throw new FormatException(string.Format("Invalid anchor: {0}", anchorText));
+            if (!match.Success) throw new FicdownException(_blockName, _lineNumber, string.Format("Invalid anchor: {0}", anchorText));
             return MatchToAnchor(match);
         }
 
-        public static IList<Anchor> ParseAnchors(string text)
+        public IList<Anchor> ParseAnchors(string text)
         {
             var matches = RegexLib.Anchors.Matches(text);
             return matches.Cast<Match>().Select(MatchToAnchor).ToList();
         }
 
-        private static Anchor MatchToAnchor(Match match)
+        private Anchor MatchToAnchor(Match match)
         {
             var astr = match.Groups["anchor"].Value;
             var txstr = match.Groups["text"].Value;
@@ -73,10 +93,10 @@ namespace Ficdown.Parser.Parser
             };
         }
 
-        public static IDictionary<bool, string> ParseConditionalText(string text)
+        public IDictionary<bool, string> ParseConditionalText(string text)
         {
             var match = RegexLib.ConditionalText.Match(text);
-            if (!match.Success) throw new FormatException(string.Format(@"Invalid conditional text: {0}", text));
+            if (!match.Success) throw new FicdownException(_blockName, _lineNumber, string.Format(@"Invalid conditional text: {0}", text));
             return new Dictionary<bool, string>
             {
                 {true, match.Groups["true"].Value},
@@ -84,22 +104,7 @@ namespace Ficdown.Parser.Parser
             };
         }
 
-        public static string ToHrefString(this IDictionary<string, bool> values, string separator)
-        {
-            return values != null
-                ? string.Join(separator,
-                    values.Where(v => !v.Key.StartsWith(">"))
-                        .Select(v => string.Format("{0}{1}", v.Value ? null : "!", v.Key))
-                        .ToArray())
-                : null;
-        }
-
-        public static string ToHrefString(this IEnumerable<string> values, string separator)
-        {
-            return values != null ? string.Join(separator, values.ToArray()) : null;
-        }
-
-        public static bool ConditionsMet(IDictionary<string, bool> playerState, IDictionary<string, bool> conditions)
+        public bool ConditionsMet(IDictionary<string, bool> playerState, IDictionary<string, bool> conditions)
         {
             return
                 conditions.All(

@@ -14,6 +14,7 @@
         {
             var blocks = new List<Block>();
             Block currentBlock = null;
+            var lineNum = 1;
             foreach (var line in lines)
             {
                 var match = Regex.Match(line, @"^(?<level>#{1,3})\s+(?<name>[^#].*)$");
@@ -24,12 +25,17 @@
                     {
                         Type = (BlockType) match.Groups["level"].Length,
                         Name = match.Groups["name"].Value,
-                        Lines = new List<string>()
+                        Lines = new List<Line>(),
+                        LineNumber = lineNum++
                     };
                 }
                 else
                 {
-                    if (currentBlock != null) currentBlock.Lines.Add(line);
+                    if (currentBlock != null) currentBlock.Lines.Add(new Line
+                    {
+                        Number = lineNum++,
+                        Text = line
+                    });
                 }
             }
             if (currentBlock != null) blocks.Add(currentBlock);
@@ -40,14 +46,13 @@
         {
             // get the story
             var storyBlock = blocks.SingleOrDefault(b => b.Type == BlockType.Story);
-            if(storyBlock == null) throw new FormatException("No story block found");
+            if(storyBlock == null) throw new FicdownException("No story block found");
 
-            var storyAnchor = Utilities.ParseAnchor(storyBlock.Name);
+            var storyAnchor = Utilities.GetInstance(storyBlock.Name, storyBlock.LineNumber).ParseAnchor(storyBlock.Name);
 
             if (storyAnchor.Href.Target == null || storyAnchor.Href.Conditions != null ||
                 storyAnchor.Href.Toggles != null)
-                throw new FormatException(string.Format("Story href should only have target: {0}",
-                    storyAnchor.Original));
+                throw new FicdownException(storyBlock.Name, storyBlock.LineNumber, "Story href should only have target");
 
             var story = new Story
             {
@@ -69,7 +74,7 @@
                 blocks.Where(b => b.Type == BlockType.Action).Select(b => BlockToAction(b, aid++)).ToDictionary(a => a.Toggle, a => a);
 
             if (!story.Scenes.ContainsKey(storyAnchor.Href.Target))
-                throw new FormatException(string.Format("Story targets non-existent scene: {0}", storyAnchor.Href.Target));
+                throw new FicdownException(storyBlock.Name, storyBlock.LineNumber, string.Format("Story targets non-existent scene: {0}", storyAnchor.Href.Target));
             story.FirstScene = storyAnchor.Href.Target;
 
             return story;
@@ -81,22 +86,23 @@
             var scene = new Scene
             {
                 Id = id,
-                Description = string.Join("\n", block.Lines).Trim()
+                LineNumber = block.LineNumber,
+                Description = string.Join("\n", block.Lines.Select(l => l.Text)).Trim()
             };
 
             try
             {
-                var sceneName = Utilities.ParseAnchor(block.Name);
+                var sceneName = Utilities.GetInstance(block.Name, block.LineNumber).ParseAnchor(block.Name);
                 scene.Name = sceneName.Title != null ? sceneName.Title.Trim() : sceneName.Text.Trim();
-                scene.Key = Utilities.NormalizeString(sceneName.Text);
+                scene.Key = Utilities.GetInstance(block.Name, block.LineNumber).NormalizeString(sceneName.Text);
                 if(sceneName.Href.Target != null || sceneName.Href.Toggles != null)
-                    throw new FormatException(string.Format("Scene href should only have conditions: {0}", block.Name));
+                    throw new FicdownException(block.Name, block.LineNumber, string.Format("Scene href should only have conditions: {0}", block.Name));
                 scene.Conditions = sceneName.Href.Conditions;
             }
-            catch(FormatException)
+            catch(FicdownException)
             {
                 scene.Name = block.Name.Trim();
-                scene.Key = Utilities.NormalizeString(block.Name);
+                scene.Key = Utilities.GetInstance(block.Name, block.LineNumber).NormalizeString(block.Name);
             }
 
             return scene;
@@ -107,8 +113,9 @@
             return new Action
             {
                 Id = id,
-                Toggle = Utilities.NormalizeString(block.Name),
-                Description = string.Join("\n", block.Lines).Trim()
+                Toggle = Utilities.GetInstance(block.Name, block.LineNumber).NormalizeString(block.Name),
+                Description = string.Join("\n", block.Lines.Select(l => l.Text)).Trim(),
+                LineNumber = block.LineNumber
             };
         }
     }

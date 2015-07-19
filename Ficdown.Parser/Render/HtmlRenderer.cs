@@ -51,7 +51,7 @@
                 File.WriteAllText(Path.Combine(outPath, "styles.css"), StylesTemplate ?? Template.Styles);
 
                 var content = page.Content;
-                foreach (var anchor in Utilities.ParseAnchors(page.Content))
+                foreach (var anchor in Utilities.GetInstance(page.Name).ParseAnchors(page.Content))
                 {
                     var newAnchor = string.Format("[{0}]({1}.html)", anchor.Text, anchor.Href.Target);
                     content = content.Replace(anchor.Original, newAnchor);

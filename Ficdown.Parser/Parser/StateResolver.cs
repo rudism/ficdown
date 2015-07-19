@@ -40,13 +40,13 @@
             };
         }
 
-        private string ResolveAnchor(Anchor anchor, IDictionary<string, bool> playerState, string targetHash)
+        private string ResolveAnchor(string blockName, int lineNumber, Anchor anchor, IDictionary<string, bool> playerState, string targetHash)
         {
             var text = anchor.Text;
             if (anchor.Href.Conditions != null)
             {
-                var satisfied = Utilities.ConditionsMet(playerState, anchor.Href.Conditions);
-                var alts = Utilities.ParseConditionalText(text);
+                var satisfied = Utilities.GetInstance(blockName, lineNumber).ConditionsMet(playerState, anchor.Href.Conditions);
+                var alts = Utilities.GetInstance(blockName, lineNumber).ParseConditionalText(text);
                 var replace = alts[satisfied];
                 text = RegexLib.EscapeChar.Replace(replace, string.Empty);
             }
@@ -66,7 +66,7 @@
                 if (page.State.ActionsToShow[i])
                 {
                     var actionTuple = _story.Actions.Single(a => a.Value.Id == i + 1);
-                    var actionAnchors = Utilities.ParseAnchors(actionTuple.Value.Description);
+                    var actionAnchors = Utilities.GetInstance(page.Scene.Name, page.Scene.LineNumber).ParseAnchors(actionTuple.Value.Description);
                     var anchorDict = GetStateDictionary(page);
                     if (
                         actionAnchors.Any(
@@ -80,19 +80,19 @@
                     resolved.AppendFormat("{0}\n\n", actionAnchors.Aggregate(actionTuple.Value.Description,
                         (current, anchor) =>
                             current.Replace(anchor.Original,
-                                ResolveAnchor(anchor, anchorDict,
+                                ResolveAnchor(page.Scene.Name, page.Scene.LineNumber, anchor, anchorDict,
                                     page.Links.ContainsKey(anchor.Original) ? page.Links[anchor.Original] : null))));
                 }
             }
 
-            var anchors = Utilities.ParseAnchors(page.Scene.Description);
+            var anchors = Utilities.GetInstance(page.Scene.Name, page.Scene.LineNumber).ParseAnchors(page.Scene.Description);
             var stateDict = GetStateDictionary(page);
             var text =
                 RegexLib.EmptyListItem.Replace(
                     anchors.Aggregate(page.Scene.Description,
                         (current, anchor) =>
                             current.Replace(anchor.Original,
-                                ResolveAnchor(anchor, stateDict,
+                                ResolveAnchor(page.Scene.Name, page.Scene.LineNumber, anchor, stateDict,
                                     page.Links.ContainsKey(anchor.Original) ? page.Links[anchor.Original] : null))),
                     string.Empty);
             var seen = page.State.ScenesSeen[page.Scene.Id - 1];

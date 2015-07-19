@@ -99,9 +99,9 @@
         {
             var states = new HashSet<string>();
 
-            var anchors = Utilities.ParseAnchors(currentState.Page.Scene.Description).ToList();
+            var anchors = Utilities.GetInstance(currentState.Page.Scene.Name, currentState.Page.Scene.LineNumber).ParseAnchors(currentState.Page.Scene.Description).ToList();
             foreach (var action in GetActionsForPage(currentState.Page))
-                anchors.AddRange(Utilities.ParseAnchors(action.Description));
+                anchors.AddRange(Utilities.GetInstance(action.Toggle, action.LineNumber).ParseAnchors(action.Description));
             var conditionals =
                 anchors.SelectMany(
                     a => a.Href.Conditions != null ? a.Href.Conditions.Select(c => c.Key) : new string[] {})
@@ -126,8 +126,8 @@
                 // don't follow links that would be hidden
                 if (anchor.Href.Conditions != null &&
                     string.IsNullOrEmpty(
-                        Utilities.ParseConditionalText(anchor.Text)[
-                            Utilities.ConditionsMet(StateResolver.GetStateDictionary(currentState.Page),
+                        Utilities.GetInstance(currentState.Page.Scene.Name, currentState.Page.Scene.LineNumber).ParseConditionalText(anchor.Text)[
+                            Utilities.GetInstance(currentState.Page.Scene.Name, currentState.Page.Scene.LineNumber).ConditionsMet(StateResolver.GetStateDictionary(currentState.Page),
                                 anchor.Href.Conditions)])) continue;
 
                 var newState = _manager.ResolveNewState(anchor, currentState.Page);

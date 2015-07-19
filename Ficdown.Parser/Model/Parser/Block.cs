@@ -6,6 +6,7 @@
     {
         public BlockType Type { get; set; }
         public string Name { get; set; }
-        public IList<string> Lines { get; set; }
+        public IList<Line> Lines { get; set; }
+        public int LineNumber { get; set; }
     }
 }

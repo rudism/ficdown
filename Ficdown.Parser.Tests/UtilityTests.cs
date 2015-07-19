@@ -6,6 +6,11 @@
 
     public class UtilityTests
     {
+        private Utilities Utilities
+        {
+            get { return Utilities.GetInstance("none", 0); }
+        }
+
         [Fact]
         public void FullAnchorMatches()
         {

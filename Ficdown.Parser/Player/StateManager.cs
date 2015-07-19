@@ -21,14 +21,14 @@
             _story = story;
             var allScenes = _story.Scenes.SelectMany(s => s.Value);
             _sceneCount = allScenes.Max(s => s.Id);
-            _actionCount = _story.Actions.Max(a => a.Value.Id);
+            _actionCount = _story.Actions.Count > 0 ? _story.Actions.Max(a => a.Value.Id) : 0;
             _stateMatrix = new Dictionary<string, int>();
             var state = 0;
             foreach (
                 var toggle in
                     allScenes.SelectMany(
                         sc =>
-                            Utilities.ParseAnchors(sc.Description)
+                            Utilities.GetInstance(sc.Name, sc.LineNumber).ParseAnchors(sc.Description)
                                 .SelectMany(
                                     a =>
                                         a.Href.Toggles != null
@@ -83,7 +83,7 @@
                         if(actionFirstToggles == null) actionFirstToggles = new List<bool>();
                         newState.State.ActionsToShow[_story.Actions[toggle].Id - 1] = true;
                         if (
-                            Utilities.ParseAnchors(_story.Actions[toggle].Description)
+                            Utilities.GetInstance(_story.Actions[toggle].Toggle, _story.Actions[toggle].LineNumber).ParseAnchors(_story.Actions[toggle].Description)
                                 .Any(a => a.Href.Conditions != null && a.Href.Conditions.ContainsKey(toggle)))
                             actionFirstToggles.Add(!current.State.PlayerState[_stateMatrix[toggle]]);
                     }
@@ -93,7 +93,7 @@
             newState.State.ActionFirstToggles = actionFirstToggles != null
                 ? new BitArray(actionFirstToggles.ToArray())
                 : null;
-            newState.Scene = GetScene(target, newState.State.PlayerState);
+            newState.Scene = GetScene(current.Scene.Name, current.Scene.LineNumber, target, newState.State.PlayerState);
             return newState;
         }
 
@@ -138,10 +138,10 @@
             return GetUniqueHash(compressed, page.Scene.Key);
         }
 
-        private Scene GetScene(string target, BitArray playerState)
+        private Scene GetScene(string blockName, int lineNumber, string target, BitArray playerState)
         {
             if (!_story.Scenes.ContainsKey(target))
-                throw new FormatException(string.Format("Encountered link to non-existant scene: {0}", target));
+                throw new FicdownException(blockName, lineNumber, string.Format("Encountered link to non-existent scene: {0}", target));
 
             Scene newScene = null;
             foreach (var scene in _story.Scenes[target])
@@ -154,13 +154,17 @@
                 }
             }
             if (newScene == null)
-                throw new FormatException(string.Format("Scene {0} reached with unmatched player state", target));
+                throw new FicdownException(blockName, lineNumber, string.Format("Scene {0} reached with unmatched player state", target));
             return newScene;
         }
 
         private bool ConditionsMatch(Scene scene, BitArray playerState)
         {
             if (scene.Conditions == null) return true;
+            scene.Conditions.ToList().ForEach(c =>
+            {
+                if(!_stateMatrix.ContainsKey(c.Key)) throw new FicdownException(scene.Name, scene.LineNumber, string.Format("Reference to non-existent state: {0}", c.Key));
+            });
             return scene.Conditions.All(c => playerState[_stateMatrix[c.Key]] == c.Value);
         }
 
