@@ -6,11 +6,22 @@
     using Microsoft.SqlServer.Server;
     using Parser;
     using Parser.Render;
+    using Parser.Model.Parser;
 
     internal class Program
     {
         private static int Main(string[] args)
         {
+            AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+            {
+                if(e.ExceptionObject is FicdownException)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.Error.WriteLine(e.ExceptionObject.ToString());
+                    Environment.Exit(3);
+                }
+            };
+
             string infile = null;
             string output = null;
             string tempdir = null;
@@ -118,7 +129,10 @@
 
             story.Orphans.ToList().ForEach(o =>
             {
+                var currentColor = Console.ForegroundColor;
+                Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.Error.WriteLine("Warning (line {0}): {1} {2} is unreachable", o.LineNumber, o.Type, o.Name);
+                Console.ForegroundColor = currentColor;
             });
 
             IRenderer rend;

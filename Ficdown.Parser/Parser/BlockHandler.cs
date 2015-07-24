@@ -48,7 +48,15 @@
             var storyBlock = blocks.SingleOrDefault(b => b.Type == BlockType.Story);
             if(storyBlock == null) throw new FicdownException("No story block found");
 
-            var storyAnchor = Utilities.GetInstance(storyBlock.Name, storyBlock.LineNumber).ParseAnchor(storyBlock.Name);
+            Anchor storyAnchor;
+            try
+            {
+                storyAnchor = Utilities.GetInstance(storyBlock.Name, storyBlock.LineNumber).ParseAnchor(storyBlock.Name);
+            }
+            catch(FicdownException ex)
+            {
+                throw new FicdownException(ex.BlockName, ex.LineNumber, "Story block must be an anchor pointing to the first scene");
+            }
 
             if (storyAnchor.Href.Target == null || storyAnchor.Href.Conditions != null ||
                 storyAnchor.Href.Toggles != null)
@@ -70,8 +78,18 @@
                 story.Scenes[scene.Key].Add(scene);
             }
             var aid = 1;
-            story.Actions =
-                blocks.Where(b => b.Type == BlockType.Action).Select(b => BlockToAction(b, aid++)).ToDictionary(a => a.Toggle, a => a);
+            try
+            {
+                story.Actions =
+                    blocks.Where(b => b.Type == BlockType.Action).Select(b => BlockToAction(b, aid++)).ToDictionary(a => a.Toggle, a => a);
+            }
+            catch(ArgumentException)
+            {
+                var a = blocks.First(b => b.Type == BlockType.Action && blocks.Any(d => b != d && BlockToAction(b, 0).Toggle == BlockToAction(d, 0).Toggle));
+                var actionA = BlockToAction(a, a.LineNumber);
+                var dupe = blocks.First(b => b.Type == BlockType.Action && b != a && BlockToAction(b, 0).Toggle == actionA.Toggle);
+                throw new FicdownException(actionA.Toggle, actionA.LineNumber, string.Format("Action is defined again on line {0}", dupe.LineNumber));
+            }
 
             if (!story.Scenes.ContainsKey(storyAnchor.Href.Target))
                 throw new FicdownException(storyBlock.Name, storyBlock.LineNumber, string.Format("Story targets non-existent scene: {0}", storyAnchor.Href.Target));

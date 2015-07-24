@@ -173,5 +173,7 @@ UpgradeLog*.htm
 # Microsoft Fakes
 FakesAssemblies/
 
+scripts/xunit.runner.console.2.0.0/
+
 # vim swap files
 .*.sw*
