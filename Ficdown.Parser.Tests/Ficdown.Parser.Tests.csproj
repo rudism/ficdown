@@ -50,7 +50,6 @@
     <Compile Include="BlockHandlerTests.cs" />
     <Compile Include="IntegrationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StateResolverTests.cs" />
     <Compile Include="TestStories\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
