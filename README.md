@@ -41,23 +41,23 @@ Running ficdown.exe without any arguments will produce the following help text:
 
 Options surrounded by square brackets are optional, everything else is required. It should be noted that while the help text shows Linux-style paths, these will not work on Windows. On Windows you should pass regular paths as you normally would (for example `--in "C:\Users\Me\Documents\MyStory.md`).
 
-#### format
+#### --format
 
 Can be either `html` or `epub`.
 
-#### in
+#### --in
 
 Should be the absolute or relative path to your Ficdown story file.
 
-#### out
+#### --out
 
 You can specify either the absolute or relative path of the epub file to generate when `format` is `epub`, or the absolute or relative path of the directory to create when `format` is `html`.
 
-#### template
+#### --template
 
 You can optionally specify a custom HTML template to use when generating the HTML or epub documents. The template directory should contain three files: [index.html](/Ficdown.Parser/Render/Views/index.html), [scene.html](/Ficdown.Parser/Render/Views/scene.html), and [styles.css](/Ficdown.Parser/Render/Assets/styles.css). Those link to the default files used if no custom template is specified (which have been optimized for simple epub formatting).
 
-#### images
+#### --images
 
 If your story contains images, you must place them all into a directory and then include the absolute or relative path to that directory here. Due to the nature of epub documents, images cannot be linked to from subdirectories in your story--you must always link to them as though they are located in the same directory as the Ficdown file. For example, this is good Markdown syntax for including images in your story:
 
@@ -75,9 +75,13 @@ The following would not work, even if your images directory contains the `stuff`
 
     ![My Image](stuff/myimage.png)
 
-#### author
+#### --author
 
 This option is required if your `format` is `epub` for the ebook metadata. It is ignored for `html`.
+
+#### --debug
+
+If you pass this option, all of the pages in your story will include output at the bottom showing you what the current player state looks like (a list of all state variables that have been toggled and are used in scenes that the player can still reach). This can be useful if you discover that your compiled story does not behave the way you expected it to.
 
 ## Other Formats
 
