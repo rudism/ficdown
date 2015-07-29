@@ -65,7 +65,7 @@
             var story = new Story
             {
                 Name = storyAnchor.Text,
-                Description = string.Join("\n", storyBlock.Lines).Trim(),
+                Description = string.Join("\n", storyBlock.Lines.Select(l => l.Text)).Trim(),
                 Scenes = new Dictionary<string, IList<Scene>>(),
                 Actions = new Dictionary<string, Action>()
             };
