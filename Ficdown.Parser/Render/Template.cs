@@ -22,7 +22,7 @@ namespace Ficdown.Parser.Render
 
         private static string GetFileContents(string fname)
         {
-            var path = Path.Combine(Environment.CurrentDirectory, string.Format("Render/{0}", fname));
+            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, string.Format("Render/{0}", fname));
             return File.ReadAllText(path);
         }
     }
