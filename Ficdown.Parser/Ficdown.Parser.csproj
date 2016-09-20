@@ -76,31 +76,27 @@
     <Compile Include="Render\HtmlRenderer.cs" />
     <Compile Include="Render\IRenderer.cs" />
     <Compile Include="Render\MimeHelper.cs" />
-    <Compile Include="Render\Template.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Template.resx</DependentUpon>
-    </Compile>
     <Compile Include="Model\Parser\Line.cs" />
     <Compile Include="Model\Parser\FicdownException.cs" />
     <Compile Include="Parser\ParserExtensions.cs" />
     <Compile Include="Model\Parser\Orphan.cs" />
+    <Compile Include="Render\Template.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <Content Include="Render\Views\scene.html" />
+    <Content Include="Render\Views\scene.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Render\Assets\styles.css" />
+    <Content Include="Render\Assets\styles.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Render\Views\index.html" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Render\Template.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Template.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <Content Include="Render\Views\index.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
