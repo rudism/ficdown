@@ -90,10 +90,14 @@
     public class EpubRenderer : HtmlRenderer
     {
         private readonly string _author;
+        private readonly string _bookId;
+        private readonly string _language;
 
-        public EpubRenderer(string author) : base()
+        public EpubRenderer(string author, string bookId, string language) : base(language)
         {
             _author = author;
+            _bookId = bookId ?? Guid.NewGuid().ToString("D");
+            _language = language ?? "en";
         }
 
         public override void Render(Model.Parser.ResolvedStory story, string outPath, bool debug = false)
@@ -113,6 +117,8 @@
                 select new Chapter(Path.Combine(temppath, fname), fname, fname.Replace(".html", string.Empty)));
 
             var epub = new Epub(Story.Name, _author, chapters);
+            epub.BookId = _bookId;
+            epub.Language = _language;
             epub.AddResourceFile(new ResourceFile("styles.css", Path.Combine(temppath, "styles.css"), "text/css"));
 
             if (!string.IsNullOrWhiteSpace(ImageDir))

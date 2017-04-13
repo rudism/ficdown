@@ -9,6 +9,8 @@
 
     public class HtmlRenderer : IRenderer
     {
+        private readonly string _language;
+
         protected readonly Markdown Markdown;
 
         public string IndexTemplate { get; set; }
@@ -18,8 +20,9 @@
 
         protected ResolvedStory Story { get; set; }
 
-        public HtmlRenderer()
+        public HtmlRenderer(string language)
         {
+            _language = language;
             Markdown = new Markdown();
         }
 
@@ -39,6 +42,7 @@
         {
             var index = FillTemplate(IndexTemplate ?? Template.Index, new Dictionary<string, string>
             {
+                {"Language", _language},
                 {"Title", story.Name},
                 {"Description", Markdown.Transform(story.Description)},
                 {"FirstScene", string.Format("{0}.html", story.FirstPage)}
@@ -64,6 +68,7 @@
 
                 var scene = FillTemplate(SceneTemplate ?? Template.Scene, new Dictionary<string, string>
                 {
+                    {"Language", _language},
                     {"Title", story.Name},
                     {"Content", Markdown.Transform(content)}
                 });

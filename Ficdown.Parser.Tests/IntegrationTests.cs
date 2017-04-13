@@ -21,7 +21,7 @@
             {
                 File.Delete(file);
             }
-            var rend = new HtmlRenderer();
+            var rend = new HtmlRenderer("en");
             rend.Render(story, path, true);
         }
     }

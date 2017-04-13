@@ -27,6 +27,8 @@
             string tempdir = null;
             string format = null;
             string author = null;
+            string bookid = null;
+            string language = "en";
             string images = null;
             var debug = false;
 
@@ -58,6 +60,12 @@
                             break;
                         case "--author":
                             author = args[i + 1];
+                            break;
+                        case "--bookid":
+                            bookid = args[i + 1];
+                            break;
+                        case "--language":
+                            language = args[i + 1];
                             break;
                         case "--images":
                             images = args[i + 1];
@@ -140,7 +148,7 @@
             {
                 case "html":
                     Directory.CreateDirectory(output);
-                    rend = new HtmlRenderer();
+                    rend = new HtmlRenderer(language);
                     break;
                 case "epub":
                     if (string.IsNullOrWhiteSpace(author))
@@ -148,7 +156,7 @@
                         Console.WriteLine(@"Epub format requires the --author argument.");
                         return 1;
                     }
-                    rend = new EpubRenderer(author);
+                    rend = new EpubRenderer(author, bookid, language);
                     break;
                 default:
                     ShowHelp();
@@ -183,6 +191,8 @@
     [--template ""/path/to/template/dir""]
     [--images ""/path/to/images/dir""]
     [--author ""Author Name""]
+    [--bookid ""ePub Book ID""]
+    [--language ""language""]
     [--debug]");
         }
     }
