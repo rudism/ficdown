@@ -88,7 +88,7 @@ namespace Ficdown.Parser.Parser
             {
                 Original = !string.IsNullOrEmpty(astr) ? astr : null,
                 Text = !string.IsNullOrEmpty(txstr) ? txstr : null,
-                Title = !string.IsNullOrEmpty(ttstr) ? ttstr : null,
+                Title = ttstr,
                 Href = ParseHref(hrefstr)
             };
         }

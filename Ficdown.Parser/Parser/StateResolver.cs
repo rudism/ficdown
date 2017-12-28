@@ -58,7 +58,8 @@
         private string ResolveDescription(PageState page)
         {
             var resolved = new StringBuilder();
-            resolved.AppendFormat("## {0}\n\n", page.Scene.Name);
+            if(!string.IsNullOrEmpty(page.Scene.Name))
+                resolved.AppendFormat("## {0}\n\n", page.Scene.Name);
 
             var firstToggleCounter = 0;
             for (var i = 0; i < page.State.ActionsToShow.Count; i++)
