@@ -44,7 +44,7 @@
             get
             {
                 var scene = _story.Scenes[_story.FirstScene].Where(s => s.Conditions == null);
-                if(scene == null)
+                if(scene.Count()  == 0)
                     throw new FicdownException(_story.Name, string.Format("Story links to undefined scene: {0}", _story.FirstScene));
                 if(scene.Count() > 1)
                     throw new FicdownException(_story.Name, string.Format("Story links to scene that is defined more than once: {0}", _story.FirstScene));

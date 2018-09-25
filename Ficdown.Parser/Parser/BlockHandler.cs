@@ -45,8 +45,11 @@
         public Story ParseBlocks(IEnumerable<Block> blocks)
         {
             // get the story
-            var storyBlock = blocks.SingleOrDefault(b => b.Type == BlockType.Story);
-            if(storyBlock == null) throw new FicdownException("No story block found");
+            var storyBlocks = blocks.Where(b => b.Type == BlockType.Story);
+            if(storyBlocks.Count() == 0) throw new FicdownException("No story block found");
+            if(storyBlocks.Count() > 1) throw new FicdownException("More than one story block found");
+
+            var storyBlock = storyBlocks.Single();
 
             Anchor storyAnchor;
             try
