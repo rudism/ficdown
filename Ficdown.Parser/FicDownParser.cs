@@ -37,6 +37,23 @@ namespace Ficdown.Parser
             var lines = storyText.Split(new[] {"\n", "\r\n"}, StringSplitOptions.None);
             var blocks = BlockHandler.ExtractBlocks(lines);
             var story = BlockHandler.ParseBlocks(blocks);
+
+            // dupe scene sanity check
+            foreach(var key in story.Scenes.Keys)
+            {
+                foreach(var scene in story.Scenes[key])
+                {
+                    foreach(var otherScene in story.Scenes[key].Where(s => s != scene))
+                    {
+                        if((scene.Conditions == null && otherScene.Conditions == null)
+                            || (scene.Conditions != null && otherScene.Conditions != null
+                                && scene.Conditions.Count == otherScene.Conditions.Count
+                                && !scene.Conditions.Except(otherScene.Conditions).Any()))
+                            throw new FicdownException(scene.Name, string.Format("Scene defined again on line {0}", otherScene.LineNumber), scene.LineNumber);
+                    }
+                }
+            }
+
             GameTraverser.Story = story;
             var resolved = StateResolver.Resolve(GameTraverser.Enumerate(), story);
             resolved.Orphans = GameTraverser.OrphanedScenes.Select(o => new Orphan

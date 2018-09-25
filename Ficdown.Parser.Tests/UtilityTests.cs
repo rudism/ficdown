@@ -15,22 +15,22 @@
         public void FullAnchorMatches()
         {
             var anchorStr = @"[Link text](/target-scene)";
-            var anchor = Utilities.ParseAnchor(anchorStr);
+            var anchor = Utilities.ParseAnchor(anchorStr, 0, 0);
             Assert.Equal(anchorStr, anchor.Original);
 
             anchorStr = @"[Link text](?condition-state#toggle-state ""Title text"")";
-            anchor = Utilities.ParseAnchor(anchorStr);
+            anchor = Utilities.ParseAnchor(anchorStr, 0, 0);
             Assert.Equal(anchorStr, anchor.Original);
 
             anchorStr = @"[Link text](""Title text"")";
-            anchor = Utilities.ParseAnchor(anchorStr);
+            anchor = Utilities.ParseAnchor(anchorStr, 0, 0);
             Assert.Equal(anchorStr, anchor.Original);
         }
 
         [Fact]
         public void AnchorWithTargetMatches()
         {
-            var anchor = Utilities.ParseAnchor(@"[Link text](/target-scene)");
+            var anchor = Utilities.ParseAnchor(@"[Link text](/target-scene)", 0, 0);
             Assert.Equal("Link text", anchor.Text);
             Assert.Equal("target-scene", anchor.Href.Target);
         }
@@ -38,15 +38,15 @@
         [Fact]
         public void AnchorsWithConditionsMatch()
         {
-            var anchor = Utilities.ParseAnchor(@"[Link text](?condition-state)");
+            var anchor = Utilities.ParseAnchor(@"[Link text](?condition-state)", 0, 0);
             Assert.Equal("Link text", anchor.Text);
             Assert.True(anchor.Href.Conditions["condition-state"]);
 
-            anchor = Utilities.ParseAnchor(@"[Link text](?!condition-state)");
+            anchor = Utilities.ParseAnchor(@"[Link text](?!condition-state)", 0, 0);
             Assert.Equal("Link text", anchor.Text);
             Assert.False(anchor.Href.Conditions["condition-state"]);
 
-            anchor = Utilities.ParseAnchor(@"[Link text](?condition-1&!condition-2)");
+            anchor = Utilities.ParseAnchor(@"[Link text](?condition-1&!condition-2)", 0, 0);
             Assert.Equal("Link text", anchor.Text);
             Assert.True(anchor.Href.Conditions["condition-1"]);
             Assert.False(anchor.Href.Conditions["condition-2"]);
@@ -55,15 +55,15 @@
         [Fact]
         public void AnchorsWithTogglesMatch()
         {
-            var anchor = Utilities.ParseAnchor(@"[Link text](#toggle-state)");
+            var anchor = Utilities.ParseAnchor(@"[Link text](#toggle-state)", 0, 0);
             Assert.Equal("Link text", anchor.Text);
             Assert.Equal("#toggle-state", anchor.Href.Original);
 
-            anchor = Utilities.ParseAnchor(@"[Link text](#toggle-1+toggle-2)");
+            anchor = Utilities.ParseAnchor(@"[Link text](#toggle-1+toggle-2)", 0, 0);
             Assert.Equal("Link text", anchor.Text);
             Assert.Equal("#toggle-1+toggle-2", anchor.Href.Original);
 
-            anchor = Utilities.ParseAnchor(@"[Link text](#toggle-1+toggle-2)");
+            anchor = Utilities.ParseAnchor(@"[Link text](#toggle-1+toggle-2)", 0, 0);
             Assert.Equal("Link text", anchor.Text);
             Assert.Equal("#toggle-1+toggle-2", anchor.Href.Original);
         }
@@ -71,11 +71,11 @@
         [Fact]
         public void AnchorsWithTitlesMatch()
         {
-            var anchor = Utilities.ParseAnchor(@"[Link text](""Title text"")");
+            var anchor = Utilities.ParseAnchor(@"[Link text](""Title text"")", 0, 0);
             Assert.Equal("Link text", anchor.Text);
             Assert.Equal("Title text", anchor.Title);
 
-            anchor = Utilities.ParseAnchor(@"[Talking to Kid](""Lobby"")");
+            anchor = Utilities.ParseAnchor(@"[Talking to Kid](""Lobby"")", 0, 0);
             Assert.Equal("Talking to Kid", anchor.Text);
             Assert.Equal("Lobby", anchor.Title);
         }
@@ -83,20 +83,20 @@
         [Fact]
         public void ComplexAnchorsMatch()
         {
-            var anchor = Utilities.ParseAnchor(@"[Link text](/target-scene?condition-state#toggle-state ""Title text"")");
+            var anchor = Utilities.ParseAnchor(@"[Link text](/target-scene?condition-state#toggle-state ""Title text"")", 0, 0);
             Assert.Equal("Link text", anchor.Text);
             Assert.Equal("/target-scene?condition-state#toggle-state", anchor.Href.Original);
             Assert.Equal("Title text", anchor.Title);
 
-            anchor = Utilities.ParseAnchor(@"[Link text](/target-scene#toggle-state)");
+            anchor = Utilities.ParseAnchor(@"[Link text](/target-scene#toggle-state)", 0, 0);
             Assert.Equal("Link text", anchor.Text);
             Assert.Equal("/target-scene#toggle-state", anchor.Href.Original);
 
-            anchor = Utilities.ParseAnchor(@"[Link text](/target-scene?condition-state)");
+            anchor = Utilities.ParseAnchor(@"[Link text](/target-scene?condition-state)", 0, 0);
             Assert.Equal("Link text", anchor.Text);
             Assert.Equal("/target-scene?condition-state", anchor.Href.Original);
 
-            anchor = Utilities.ParseAnchor(@"[Link text](?condition-state#toggle-state)");
+            anchor = Utilities.ParseAnchor(@"[Link text](?condition-state#toggle-state)", 0, 0);
             Assert.Equal("Link text", anchor.Text);
             Assert.Equal("?condition-state#toggle-state", anchor.Href.Original);
         }

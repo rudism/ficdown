@@ -51,16 +51,16 @@
             Anchor storyAnchor;
             try
             {
-                storyAnchor = Utilities.GetInstance(storyBlock.Name, storyBlock.LineNumber).ParseAnchor(storyBlock.Name);
+                storyAnchor = Utilities.GetInstance(storyBlock.Name, storyBlock.LineNumber).ParseAnchor(storyBlock.Name, storyBlock.LineNumber, 1);
             }
             catch(FicdownException ex)
             {
-                throw new FicdownException(ex.BlockName, ex.LineNumber, "Story block must be an anchor pointing to the first scene");
+                throw new FicdownException(ex.BlockName, "Story name must be an anchor pointing to the first scene", ex.LineNumber);
             }
 
             if (storyAnchor.Href.Target == null || storyAnchor.Href.Conditions != null ||
                 storyAnchor.Href.Toggles != null)
-                throw new FicdownException(storyBlock.Name, storyBlock.LineNumber, "Story href should only have target");
+                throw new FicdownException(storyBlock.Name, "Story href should only have a target", storyBlock.LineNumber);
 
             var story = new Story
             {
@@ -88,11 +88,11 @@
                 var a = blocks.First(b => b.Type == BlockType.Action && blocks.Any(d => b != d && BlockToAction(b, 0).Toggle == BlockToAction(d, 0).Toggle));
                 var actionA = BlockToAction(a, a.LineNumber);
                 var dupe = blocks.First(b => b.Type == BlockType.Action && b != a && BlockToAction(b, 0).Toggle == actionA.Toggle);
-                throw new FicdownException(actionA.Toggle, actionA.LineNumber, string.Format("Action is defined again on line {0}", dupe.LineNumber));
+                throw new FicdownException(actionA.Toggle, string.Format("Action is defined again on line {0}", dupe.LineNumber), actionA.LineNumber);
             }
 
             if (!story.Scenes.ContainsKey(storyAnchor.Href.Target))
-                throw new FicdownException(storyBlock.Name, storyBlock.LineNumber, string.Format("Story targets non-existent scene: {0}", storyAnchor.Href.Target));
+                throw new FicdownException(storyBlock.Name, string.Format("Story links to undefined scene: {0}", storyAnchor.Href.Target), storyBlock.LineNumber);
             story.FirstScene = storyAnchor.Href.Target;
 
             return story;
@@ -105,19 +105,20 @@
             {
                 Id = id,
                 LineNumber = block.LineNumber,
+                RawDescription = string.Join("\n", block.Lines.Select(l => l.Text)),
                 Description = string.Join("\n", block.Lines.Select(l => l.Text)).Trim()
             };
 
-            try
+            if(RegexLib.Anchors.IsMatch(block.Name))
             {
-                var sceneName = Utilities.GetInstance(block.Name, block.LineNumber).ParseAnchor(block.Name);
+                var sceneName = Utilities.GetInstance(block.Name, block.LineNumber).ParseAnchor(block.Name, block.LineNumber, 1);
                 scene.Name = sceneName.Title != null ? sceneName.Title.Trim() : sceneName.Text.Trim();
                 scene.Key = Utilities.GetInstance(block.Name, block.LineNumber).NormalizeString(sceneName.Text);
                 if(sceneName.Href.Target != null || sceneName.Href.Toggles != null)
-                    throw new FicdownException(block.Name, block.LineNumber, string.Format("Scene href should only have conditions: {0}", block.Name));
+                    throw new FicdownException(block.Name, "Scene href should only have conditions", block.LineNumber);
                 scene.Conditions = sceneName.Href.Conditions;
             }
-            catch(FicdownException)
+            else
             {
                 scene.Name = block.Name.Trim();
                 scene.Key = Utilities.GetInstance(block.Name, block.LineNumber).NormalizeString(block.Name);
@@ -132,6 +133,7 @@
             {
                 Id = id,
                 Toggle = Utilities.GetInstance(block.Name, block.LineNumber).NormalizeString(block.Name),
+                RawDescription = string.Join("\n", block.Lines.Select(l => l.Text)),
                 Description = string.Join("\n", block.Lines.Select(l => l.Text)).Trim(),
                 LineNumber = block.LineNumber
             };

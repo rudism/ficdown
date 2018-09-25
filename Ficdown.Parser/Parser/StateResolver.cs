@@ -46,7 +46,7 @@
             if (anchor.Href.Conditions != null)
             {
                 var satisfied = Utilities.GetInstance(blockName, lineNumber).ConditionsMet(playerState, anchor.Href.Conditions);
-                var alts = Utilities.GetInstance(blockName, lineNumber).ParseConditionalText(text);
+                var alts = Utilities.GetInstance(blockName, lineNumber).ParseConditionalText(anchor);
                 var replace = alts[satisfied];
                 text = RegexLib.EscapeChar.Replace(replace, string.Empty);
             }
@@ -67,7 +67,7 @@
                 if (page.State.ActionsToShow[i])
                 {
                     var actionTuple = _story.Actions.Single(a => a.Value.Id == i + 1);
-                    var actionAnchors = Utilities.GetInstance(page.Scene.Name, page.Scene.LineNumber).ParseAnchors(actionTuple.Value.Description);
+                    var actionAnchors = Utilities.GetInstance(page.Scene.Name, page.Scene.LineNumber).ParseAnchors(actionTuple.Value.RawDescription);
                     var anchorDict = GetStateDictionary(page);
                     if (
                         actionAnchors.Any(
@@ -86,7 +86,7 @@
                 }
             }
 
-            var anchors = Utilities.GetInstance(page.Scene.Name, page.Scene.LineNumber).ParseAnchors(page.Scene.Description);
+            var anchors = Utilities.GetInstance(page.Scene.Name, page.Scene.LineNumber).ParseAnchors(page.Scene.RawDescription);
             var stateDict = GetStateDictionary(page);
             var text =
                 RegexLib.EmptyListItem.Replace(

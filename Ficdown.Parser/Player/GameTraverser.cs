@@ -125,11 +125,11 @@
 
             var states = new HashSet<string>();
 
-            var anchors = Utilities.GetInstance(currentState.Page.Scene.Name, currentState.Page.Scene.LineNumber).ParseAnchors(currentState.Page.Scene.Description).ToList();
+            var anchors = Utilities.GetInstance(currentState.Page.Scene.Name, currentState.Page.Scene.LineNumber).ParseAnchors(currentState.Page.Scene.RawDescription).ToList();
             foreach (var action in GetActionsForPage(currentState.Page))
             {
                 action.Visited = true;
-                anchors.AddRange(Utilities.GetInstance(action.Toggle, action.LineNumber).ParseAnchors(action.Description));
+                anchors.AddRange(Utilities.GetInstance(action.Toggle, action.LineNumber).ParseAnchors(action.RawDescription));
             }
             var conditionals =
                 anchors.SelectMany(
@@ -143,8 +143,19 @@
                 // signal to previous scenes that this scene's used conditionals are important
                 if(currentState.Page.Scene.Conditions != null)
                     foreach (var conditional in currentState.Page.Scene.Conditions)
-                        _manager.ToggleStateOn(affected, conditional.Key);
-                foreach (var conditional in conditionals) _manager.ToggleStateOn(affected, conditional);
+                    {
+                        var anchor = anchors.FirstOrDefault(a =>
+                            a.Href.Conditions != null
+                            && a.Href.Conditions.Keys.Contains(conditional.Key));
+                        _manager.ToggleStateOn(affected, conditional.Key, currentState.Page.Scene.Name, anchor);
+                    }
+                foreach (var conditional in conditionals)
+                {
+                    var anchor = anchors.FirstOrDefault(a =>
+                        a.Href.Conditions != null
+                        && a.Href.Conditions.Keys.Contains(conditional));
+                    _manager.ToggleStateOn(affected, conditional, currentState.Page.Scene.Name, anchor);
+                }
 
                 // signal to previous scenes if this scene has first-seen text
                 if (hasFirstSeen) _manager.ToggleSeenSceneOn(affected, currentState.Page.Scene.Id);
@@ -155,7 +166,7 @@
                 // don't follow links that would be hidden
                 if (anchor.Href.Conditions != null &&
                     string.IsNullOrEmpty(
-                        Utilities.GetInstance(currentState.Page.Scene.Name, currentState.Page.Scene.LineNumber).ParseConditionalText(anchor.Text)[
+                        Utilities.GetInstance(currentState.Page.Scene.Name, currentState.Page.Scene.LineNumber).ParseConditionalText(anchor)[
                             Utilities.GetInstance(currentState.Page.Scene.Name, currentState.Page.Scene.LineNumber).ConditionsMet(StateResolver.GetStateDictionary(currentState.Page),
                                 anchor.Href.Conditions)])) continue;
 

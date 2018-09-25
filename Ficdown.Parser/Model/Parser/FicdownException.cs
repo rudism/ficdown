@@ -6,24 +6,25 @@ namespace Ficdown.Parser.Model.Parser
     {
         public string BlockName { get; private set; }
         public int? LineNumber { get; private set; }
+        public int? ColNumber { get; private set; }
 
-        public FicdownException(string blockName, int? lineNumber, string message) : base(message)
+        public FicdownException(string blockName, string message, int? lineNumber = null, int? colNumber = null) : base(message)
         {
             BlockName = blockName;
             LineNumber = lineNumber;
+            ColNumber = colNumber;
         }
 
         public FicdownException(string message) : base(message) { }
 
         public override string ToString()
         {
-            return !string.IsNullOrEmpty(BlockName)
-                ? string.Format("Error in block \"{0}\" (Line {1}): {2}",
-                    BlockName,
-                    LineNumber.HasValue
-                        ? LineNumber.ToString()
-                        : "unknown", Message)
-                : string.Format("Error: {0}", Message);
+            return string.Format("Error L{0},{1}: {2}",
+                LineNumber ?? 1,
+                ColNumber ?? 1,
+                !string.IsNullOrEmpty(BlockName)
+                    ? string.Format("\"{0}\": {1}", BlockName, Message)
+                    : Message);
         }
     }
 }

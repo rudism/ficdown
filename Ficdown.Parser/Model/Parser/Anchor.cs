@@ -6,5 +6,7 @@
         public string Text { get; set; }
         public Href Href { get; set; }
         public string Title { get; set; }
+        public int LineNumber { get; set; }
+        public int ColNumber { get; set; }
     }
 }

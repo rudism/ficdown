@@ -28,7 +28,7 @@
                 var toggle in
                     allScenes.SelectMany(
                         sc =>
-                            Utilities.GetInstance(sc.Name, sc.LineNumber).ParseAnchors(sc.Description)
+                            Utilities.GetInstance(sc.Name, sc.LineNumber).ParseAnchors(sc.RawDescription)
                                 .SelectMany(
                                     a =>
                                         a.Href.Toggles != null
@@ -43,6 +43,12 @@
         {
             get
             {
+                var scene = _story.Scenes[_story.FirstScene].Where(s => s.Conditions == null);
+                if(scene == null)
+                    throw new FicdownException(_story.Name, string.Format("Story links to undefined scene: {0}", _story.FirstScene));
+                if(scene.Count() > 1)
+                    throw new FicdownException(_story.Name, string.Format("Story links to scene that is defined more than once: {0}", _story.FirstScene));
+
                 return new PageState
                 {
                     Id = Guid.Empty,
@@ -61,7 +67,7 @@
                         ActionsToShow = new BitArray(_actionCount),
                         ActionFirstToggles = null
                     },
-                    Scene = _story.Scenes[_story.FirstScene].Single(s => s.Conditions == null),
+                    Scene = scene.Single(),
                     StateMatrix = _stateMatrix
                 };
             }
@@ -83,7 +89,7 @@
                         if(actionFirstToggles == null) actionFirstToggles = new List<bool>();
                         newState.State.ActionsToShow[_story.Actions[toggle].Id - 1] = true;
                         if (
-                            Utilities.GetInstance(_story.Actions[toggle].Toggle, _story.Actions[toggle].LineNumber).ParseAnchors(_story.Actions[toggle].Description)
+                            Utilities.GetInstance(_story.Actions[toggle].Toggle, _story.Actions[toggle].LineNumber).ParseAnchors(_story.Actions[toggle].RawDescription)
                                 .Any(a => a.Href.Conditions != null && a.Href.Conditions.ContainsKey(toggle)))
                             actionFirstToggles.Add(!current.State.PlayerState[_stateMatrix[toggle]]);
                     }
@@ -93,12 +99,14 @@
             newState.State.ActionFirstToggles = actionFirstToggles != null
                 ? new BitArray(actionFirstToggles.ToArray())
                 : null;
-            newState.Scene = GetScene(current.Scene.Name, current.Scene.LineNumber, target, newState.State.PlayerState);
+            newState.Scene = GetScene(current.Scene.Name, anchor, target, newState.State.PlayerState);
             return newState;
         }
 
-        public void ToggleStateOn(State state, string toggle)
+        public void ToggleStateOn(State state, string toggle, string blockName, Anchor anchor)
         {
+            if(!_stateMatrix.ContainsKey(toggle))
+                throw new FicdownException(blockName, string.Format("Conditional for undefined state: {0}", toggle), anchor != null ? anchor.LineNumber : 1, anchor != null ? anchor.ColNumber : 1);
             state.PlayerState[_stateMatrix[toggle]] = true;
         }
 
@@ -138,10 +146,10 @@
             return GetUniqueHash(compressed, page.Scene.Key);
         }
 
-        private Scene GetScene(string blockName, int lineNumber, string target, BitArray playerState)
+        private Scene GetScene(string blockName, Anchor anchor, string target, BitArray playerState)
         {
             if (!_story.Scenes.ContainsKey(target))
-                throw new FicdownException(blockName, lineNumber, string.Format("Encountered link to non-existent scene: {0}", target));
+                throw new FicdownException(blockName, string.Format("Link to undefined scene: {0}", target), anchor.LineNumber, anchor.ColNumber);
 
             Scene newScene = null;
             foreach (var scene in _story.Scenes[target])
@@ -154,7 +162,7 @@
                 }
             }
             if (newScene == null)
-                throw new FicdownException(blockName, lineNumber, string.Format("Scene {0} reached with unmatched player state", target));
+                throw new FicdownException(blockName, string.Format("Link to scene that is undefined for conditionals: {0}", target), anchor.LineNumber, anchor.ColNumber);
             return newScene;
         }
 
@@ -163,7 +171,7 @@
             if (scene.Conditions == null) return true;
             scene.Conditions.ToList().ForEach(c =>
             {
-                if(!_stateMatrix.ContainsKey(c.Key)) throw new FicdownException(scene.Name, scene.LineNumber, string.Format("Reference to non-existent state: {0}", c.Key));
+                if(!_stateMatrix.ContainsKey(c.Key)) throw new FicdownException(scene.Name, string.Format("Conditional for undefined state: {0}", c.Key), scene.LineNumber);
             });
             return scene.Conditions.All(c => playerState[_stateMatrix[c.Key]] == c.Value);
         }
