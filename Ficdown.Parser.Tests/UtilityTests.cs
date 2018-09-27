@@ -1,14 +1,18 @@
 ﻿namespace Ficdown.Parser.Tests
 {
+    using System.Collections.Generic;
     using System.Linq;
+    using Model.Parser;
     using Parser;
     using Xunit;
 
     public class UtilityTests
     {
+        private List<FicdownException> Warnings = new List<FicdownException>();
+
         private Utilities Utilities
         {
-            get { return Utilities.GetInstance("none", 0); }
+            get { return Utilities.GetInstance(Warnings, "none", 0); }
         }
 
         [Fact]

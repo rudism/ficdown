@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Model.Parser;
     using Model.Player;
     using Model.Story;
     using Parser;
@@ -17,6 +18,8 @@
         private IDictionary<int, Action> _actionMatrix;
         private bool _wasRun = false;
 
+        public List<FicdownException> Warnings { private get; set; }
+
         private Story _story;
         public Story Story
         {
@@ -25,7 +28,7 @@
             {
                 _story = value;
                 _actionMatrix = _story.Actions.ToDictionary(a => a.Value.Id, a => a.Value);
-                _manager = new StateManager(_story);
+                _manager = new StateManager(_story, Warnings);
                 _processingQueue = new Queue<StateQueueItem>();
                 _processed = new Dictionary<string, PageState>();
                 _compressed = new Dictionary<string, PageState>();
@@ -125,15 +128,15 @@
 
             var states = new HashSet<string>();
 
-            var anchors = Utilities.GetInstance(currentState.Page.Scene.Name, currentState.Page.Scene.LineNumber).ParseAnchors(currentState.Page.Scene.RawDescription).ToList();
+            var anchors = Utilities.GetInstance(Warnings, currentState.Page.Scene.Name, currentState.Page.Scene.LineNumber).ParseAnchors(currentState.Page.Scene.RawDescription).ToList();
             foreach (var action in GetActionsForPage(currentState.Page))
             {
                 action.Visited = true;
-                anchors.AddRange(Utilities.GetInstance(action.Toggle, action.LineNumber).ParseAnchors(action.RawDescription));
+                anchors.AddRange(Utilities.GetInstance(Warnings, action.Toggle, action.LineNumber).ParseAnchors(action.RawDescription));
             }
             var conditionals =
                 anchors.SelectMany(
-                    a => a.Href.Conditions != null ? a.Href.Conditions.Select(c => c.Key) : new string[] {})
+                    a => a.Href != null && a.Href.Conditions != null ? a.Href.Conditions.Select(c => c.Key) : new string[] {})
                     .Distinct()
                     .ToArray();
             var hasFirstSeen = RegexLib.BlockQuotes.IsMatch(currentState.Page.Scene.Description);
@@ -147,39 +150,42 @@
                         var anchor = anchors.FirstOrDefault(a =>
                             a.Href.Conditions != null
                             && a.Href.Conditions.Keys.Contains(conditional.Key));
-                        _manager.ToggleStateOn(affected, conditional.Key, currentState.Page.Scene.Name, anchor);
+                        _manager.ToggleStateOn(affected, conditional.Key, currentState.Page.Scene.Name, anchor != null ? anchor.LineNumber : currentState.Page.Scene.LineNumber, anchor != null ? anchor.ColNumber : 1);
                     }
                 foreach (var conditional in conditionals)
                 {
                     var anchor = anchors.FirstOrDefault(a =>
                         a.Href.Conditions != null
                         && a.Href.Conditions.Keys.Contains(conditional));
-                    _manager.ToggleStateOn(affected, conditional, currentState.Page.Scene.Name, anchor);
+                    _manager.ToggleStateOn(affected, conditional, currentState.Page.Scene.Name, anchor != null ? anchor.LineNumber : currentState.Page.Scene.LineNumber, anchor != null ? anchor.ColNumber : 1);
                 }
 
                 // signal to previous scenes if this scene has first-seen text
                 if (hasFirstSeen) _manager.ToggleSeenSceneOn(affected, currentState.Page.Scene.Id);
             }
 
-            foreach (var anchor in anchors.Where(a => a.Href.Target != null || a.Href.Toggles != null))
+            foreach (var anchor in anchors.Where(a => a.Href != null && (a.Href.Target != null || a.Href.Toggles != null)))
             {
                 // don't follow links that would be hidden
                 if (anchor.Href.Conditions != null &&
                     string.IsNullOrEmpty(
-                        Utilities.GetInstance(currentState.Page.Scene.Name, currentState.Page.Scene.LineNumber).ParseConditionalText(anchor)[
-                            Utilities.GetInstance(currentState.Page.Scene.Name, currentState.Page.Scene.LineNumber).ConditionsMet(StateResolver.GetStateDictionary(currentState.Page),
+                        Utilities.GetInstance(Warnings, currentState.Page.Scene.Name, currentState.Page.Scene.LineNumber).ParseConditionalText(anchor)[
+                            Utilities.GetInstance(Warnings, currentState.Page.Scene.Name, currentState.Page.Scene.LineNumber).ConditionsMet(StateResolver.GetStateDictionary(currentState.Page),
                                 anchor.Href.Conditions)])) continue;
 
                 var newState = _manager.ResolveNewState(anchor, currentState.Page);
-                if (!currentState.Page.Links.ContainsKey(anchor.Original))
-                    currentState.Page.Links.Add(anchor.Original, newState.UniqueHash);
-
-                if (!states.Contains(newState.UniqueHash) && !_processed.ContainsKey(newState.UniqueHash))
+                if(newState.Scene != null)
                 {
-                    states.Add(newState.UniqueHash);
-                    var newAffected = new List<State>(currentState.AffectedStates);
-                    newAffected.Add(newState.AffectedState);
-                    _processingQueue.Enqueue(new StateQueueItem {Page = newState, AffectedStates = newAffected});
+                    if (!currentState.Page.Links.ContainsKey(anchor.Original))
+                        currentState.Page.Links.Add(anchor.Original, newState.UniqueHash);
+
+                    if (!states.Contains(newState.UniqueHash) && !_processed.ContainsKey(newState.UniqueHash))
+                    {
+                        states.Add(newState.UniqueHash);
+                        var newAffected = new List<State>(currentState.AffectedStates);
+                        newAffected.Add(newState.AffectedState);
+                        _processingQueue.Enqueue(new StateQueueItem {Page = newState, AffectedStates = newAffected});
+                    }
                 }
             }
         }

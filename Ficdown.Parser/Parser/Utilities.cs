@@ -1,6 +1,5 @@
 ﻿namespace Ficdown.Parser.Parser
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text.RegularExpressions;
@@ -8,19 +7,23 @@
 
     internal class Utilities
     {
-        public static Utilities GetInstance(string blockName, int lineNumber)
+        private List<FicdownException> _warnings { get; set; }
+
+        public static Utilities GetInstance(List<FicdownException> warnings, string blockName, int lineNumber)
         {
             return new Utilities
             {
+                _warnings = warnings,
                 _blockName = blockName,
                 _lineNumber = lineNumber
             };
         }
 
-        public static Utilities GetInstance(string blockName)
+        public static Utilities GetInstance(List<FicdownException> warnings, string blockName)
         {
             return new Utilities
             {
+                _warnings = warnings,
                 _blockName = blockName
             };
         }
@@ -56,13 +59,18 @@
                             : null
                 };
             }
-            throw new FicdownException(_blockName, string.Format("Invalid href: {0}", href), lineNumber, colNumber);
+            _warnings.Add(new FicdownException(_blockName, string.Format("Invalid href: {0}", href), lineNumber, colNumber));
+            return null;
         }
 
         public Anchor ParseAnchor(string anchorText, int lineNumber, int colNumber)
         {
             var match = RegexLib.Anchors.Match(anchorText);
-            if (!match.Success) throw new FicdownException(_blockName, string.Format("Invalid anchor: {0}", anchorText), lineNumber, colNumber);
+            if (!match.Success)
+            {
+                _warnings.Add(new FicdownException(_blockName, string.Format("Invalid anchor: {0}", anchorText), lineNumber, colNumber));
+                return null;
+            }
             return MatchToAnchor(match, lineNumber, colNumber);
         }
 
@@ -121,7 +129,10 @@
         {
             var match = RegexLib.ConditionalText.Match(anchor.Text);
             if (!match.Success)
-                throw new FicdownException(_blockName, string.Format(@"Invalid conditional text: {0}", anchor.Text), anchor.LineNumber, anchor.ColNumber);
+            {
+                _warnings.Add(new FicdownException(_blockName, string.Format(@"Invalid conditional text: {0}", anchor.Text), anchor.LineNumber, anchor.ColNumber));
+                return null;
+            }
 
             return new Dictionary<bool, string>
             {

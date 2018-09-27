@@ -149,12 +149,10 @@
 
             var story = parser.ParseStory(storyText);
 
-            story.Orphans.ToList().ForEach(o =>
-            {
-                Console.WriteLine("Warning L{0},1: \"{1}\": Unreachable {2}", o.LineNumber, o.Name, o.Type);
-            });
+            parser.Warnings.Select(w => w.ToString()).Distinct().ToList().ForEach(s => Console.WriteLine(s));
+            story.Orphans.ToList().ForEach(o => Console.WriteLine("Warning L{0},1: \"{1}\": Unreachable {2}", o.LineNumber, o.Name, o.Type));
 
-            if(!lintMode)
+            if(!lintMode && parser.Warnings.Count() == 0)
             {
                 IRenderer rend;
                 switch (format)

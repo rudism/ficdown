@@ -4,6 +4,7 @@
 namespace Ficdown.Parser
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using Model.Parser;
     using Parser;
@@ -11,25 +12,53 @@ namespace Ficdown.Parser
 
     public class FicdownParser
     {
+        public List<FicdownException> Warnings { get; private set; }
+
         private IBlockHandler _blockHandler;
         internal IBlockHandler BlockHandler
         {
-            get { return _blockHandler ?? (_blockHandler = new BlockHandler()); }
-            set { _blockHandler = value; }
+            get
+            {
+                return _blockHandler ??
+                    (_blockHandler = new BlockHandler { Warnings = Warnings });
+            }
+            set
+            {
+                _blockHandler = value;
+                _blockHandler.Warnings = Warnings;
+            }
         }
 
         private IGameTraverser _gameTraverser;
         internal IGameTraverser GameTraverser
         {
-            get { return _gameTraverser ?? (_gameTraverser = new GameTraverser()); }
-            set { _gameTraverser = value; }
+            get { return _gameTraverser ??
+                (_gameTraverser = new GameTraverser { Warnings = Warnings }); }
+            set
+            {
+                _gameTraverser = value;
+                _gameTraverser.Warnings = Warnings;
+            }
         }
 
         private IStateResolver _stateResolver;
         internal IStateResolver StateResolver
         {
-            get { return _stateResolver ?? (_stateResolver = new StateResolver()); }
-            set { _stateResolver = value; }
+            get
+            {
+                return _stateResolver ??
+                    (_stateResolver = new StateResolver { Warnings = Warnings });
+            }
+            set
+            {
+                _stateResolver = value;
+                _stateResolver.Warnings = Warnings;
+            }
+        }
+
+        public FicdownParser()
+        {
+            Warnings = new List<FicdownException>();
         }
 
         public ResolvedStory ParseStory(string storyText)
@@ -49,7 +78,7 @@ namespace Ficdown.Parser
                             || (scene.Conditions != null && otherScene.Conditions != null
                                 && scene.Conditions.Count == otherScene.Conditions.Count
                                 && !scene.Conditions.Except(otherScene.Conditions).Any()))
-                            throw new FicdownException(scene.Name, string.Format("Scene defined again on line {0}", otherScene.LineNumber), scene.LineNumber);
+                            Warnings.Add(new FicdownException(scene.Name, string.Format("Scene defined again on line {0}", otherScene.LineNumber), scene.LineNumber));
                     }
                 }
             }
