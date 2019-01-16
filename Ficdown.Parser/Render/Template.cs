@@ -2,9 +2,12 @@ namespace Ficdown.Parser.Render
 {
     using System;
     using System.IO;
+    using System.Reflection;
 
     public static class Template
     {
+        public static  string BaseDir => Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).AbsolutePath);
+
         public static string Index
         {
             get { return GetFileContents("Views/index.html"); }
@@ -22,7 +25,7 @@ namespace Ficdown.Parser.Render
 
         private static string GetFileContents(string fname)
         {
-            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, string.Format("Render/{0}", fname));
+            var path = Path.Combine(Template.BaseDir, "Render", fname);
             return File.ReadAllText(path);
         }
     }

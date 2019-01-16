@@ -5,7 +5,6 @@ namespace Ficdown.Parser
 {
     using System;
     using System.Linq;
-    using System.Collections.Generic;
     using Model.Parser;
     using Parser;
     using Player;

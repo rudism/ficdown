@@ -6,13 +6,11 @@ This project contains the core Ficdown library for parsing Ficdown stories, as w
 
 ## Dependencies
 
-Ficdown is written using .NET and should run on recent versions of Windows without requiring any additional downloads. Older versions may need to have .NET 4.5 installed via Windows Software Update.
-
-It has been written and tested on Linux using [Mono](http://www.mono-project.com).
+Ficdown is written using .NET Core and should run on Windows, Linux, and OSX without needing any additional system dependencies installed.
 
 ## Obtaining
 
-If you want to use Ficdown to convert your stories into ebooks, download *ficdown.zip* from the latest release on the [releases](https://github.com/rudism/Ficdown/releases) page and decompress it somewhere on your hard drive. Ficdown does not include an installer, the ficdown.exe utility is included directly in the zip archive.
+If you want to use Ficdown to convert your stories into ebooks, download the latest version from the [releases](https://github.com/rudism/Ficdown/releases) page and decompress it somewhere on your hard drive. Ficdown does not include an installer, the application and all of its dependencies are included directly in the zip archive.
 
 ## Usage
 
@@ -24,7 +22,7 @@ Once in your command prompt, you can run ficdown by typing `ficdown.exe` and the
 
 ### Linux/Mac OS X
 
-You must have Mono installed to use ficdown.exe. Assuming it is installed an on your path, from your command line in the ficdown folder you would just need to type `mono ficdown.exe` and include your command line options to pass to ficdown
+The pre-built releases are self-contained .NET Core deployments, so you should be able to just run the `ficdown` executable after decompressing it.
 
 ### Options
 
@@ -39,7 +37,7 @@ Running ficdown.exe without any arguments will produce the following help text:
         [--author "Author Name"]
         [--debug]
 
-Options surrounded by square brackets are optional, everything else is required. It should be noted that while the help text shows Linux-style paths, these will not work on Windows. On Windows you should pass regular paths as you normally would (for example `--in "C:\Users\Me\Documents\MyStory.md`).
+Arguments surrounded by square brackets are optional, everything else is required. It should be noted that while the help text shows Linux-style paths, these will not work on Windows. On Windows you should pass regular paths as you normally would (for example `--in "C:\Users\Me\Documents\MyStory.md`).
 
 #### --format
 

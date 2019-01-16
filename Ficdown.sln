@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
-MinimumVisualStudioVersion = 10.0.40219.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26124.0
+MinimumVisualStudioVersion = 15.0.26124.0
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ficdown.Parser", "Ficdown.Parser\Ficdown.Parser.csproj", "{780F652D-7541-4171-BB89-2D263D3961DC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ficdown.Parser.Tests", "Ficdown.Parser.Tests\Ficdown.Parser.Tests.csproj", "{756192E2-BA47-4850-8096-289D44878A7E}"

@@ -1,8 +1,5 @@
 ﻿namespace Ficdown.Parser.Tests
 {
-    using System;
-    using System.Linq;
-    using System.Collections.Generic;
     using Xunit;
     using Parser;
     using Model.Parser;

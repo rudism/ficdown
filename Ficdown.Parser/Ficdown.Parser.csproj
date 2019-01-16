@@ -1,109 +1,17 @@
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{780F652D-7541-4171-BB89-2D263D3961DC}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Ficdown.Parser</RootNamespace>
-    <AssemblyName>Ficdown.Parser</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Epub4Net">
-      <HintPath>..\packages\Epub4Net.1.2.0\lib\net40\Epub4Net.dll</HintPath>
-    </Reference>
-    <Reference Include="Ionic.Zip">
-      <HintPath>..\packages\DotNetZip.1.9.1.8\lib\net20\Ionic.Zip.dll</HintPath>
-    </Reference>
-    <Reference Include="MarkdownSharp">
-      <HintPath>..\packages\MarkdownSharp.1.13.0.0\lib\35\MarkdownSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <None Include="Render\**\*.html" CopyToOutputDirectory="Always" />
+    <None Include="Render\**\*.css" CopyToOutputDirectory="Always" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Model\Parser\ResolvedPage.cs" />
-    <Compile Include="Model\Parser\ResolvedStory.cs" />
-    <Compile Include="Model\Player\PageState.cs" />
-    <Compile Include="Model\Player\State.cs" />
-    <Compile Include="Model\Player\StateQueueItem.cs" />
-    <Compile Include="Parser\BlockHandler.cs" />
-    <Compile Include="Parser\IBlockHandler.cs" />
-    <Compile Include="Parser\RegexLib.cs" />
-    <Compile Include="Parser\StateResolver.cs" />
-    <Compile Include="Parser\Utilities.cs" />
-    <Compile Include="FicDownParser.cs" />
-    <Compile Include="Model\Parser\Anchor.cs" />
-    <Compile Include="Model\Parser\Block.cs" />
-    <Compile Include="Model\Parser\BlockType.cs" />
-    <Compile Include="Parser\IStateResolver.cs" />
-    <Compile Include="Model\Parser\Href.cs" />
-    <Compile Include="Model\Player\PlayerState.cs" />
-    <Compile Include="Model\Story\Extensions\SceneExtensions.cs" />
-    <Compile Include="Player\GameTraverser.cs" />
-    <Compile Include="Player\IGameTraverser.cs" />
-    <Compile Include="Player\StateManager.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Model\Story\Action.cs" />
-    <Compile Include="Model\Story\Scene.cs" />
-    <Compile Include="Model\Story\Story.cs" />
-    <Compile Include="Render\EpubRenderer.cs" />
-    <Compile Include="Render\HtmlRenderer.cs" />
-    <Compile Include="Render\IRenderer.cs" />
-    <Compile Include="Render\MimeHelper.cs" />
-    <Compile Include="Model\Parser\Line.cs" />
-    <Compile Include="Model\Parser\FicdownException.cs" />
-    <Compile Include="Parser\ParserExtensions.cs" />
-    <Compile Include="Model\Parser\Orphan.cs" />
-    <Compile Include="Render\Template.cs" />
+    <PackageReference Include="Epub4Net" Version="1.2.0" />
+    <PackageReference Include="Ionic.Zip" Version="1.9.1.8" />
+    <PackageReference Include="MarkdownSharp" Version="2.0.5" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-    <Content Include="Render\Views\scene.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Render\Assets\styles.css">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Render\Views\index.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

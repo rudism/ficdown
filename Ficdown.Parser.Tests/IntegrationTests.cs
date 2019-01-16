@@ -1,10 +1,7 @@
 ﻿namespace Ficdown.Parser.Tests
 {
-    using System;
     using System.IO;
-    using System.Text;
     using Render;
-    using TestStories;
     using Xunit;
 
     public class IntegrationTests
@@ -13,9 +10,9 @@
         public void CanParseValidStoryFile()
         {
             var parser = new FicdownParser();
-            var storyText = Encoding.UTF8.GetString(Resources.CloakOfDarkness);
+            var storyText = File.ReadAllText(Path.Combine(Template.BaseDir, "TestStories", "CloakOfDarkness.md"));
             var story = parser.ParseStory(storyText);
-            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "itest_output");
+            var path = Path.Combine(Template.BaseDir, "itest_output");
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
             foreach (var file in Directory.GetFiles(path))
             {
