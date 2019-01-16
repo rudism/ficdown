@@ -98,6 +98,7 @@
             _author = author;
             _bookId = bookId ?? Guid.NewGuid().ToString("D");
             _language = language ?? "en";
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         }
 
         public override void Render(Model.Parser.ResolvedStory story, string outPath, bool debug = false)
