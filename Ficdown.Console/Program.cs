@@ -196,16 +196,18 @@
         private static void ShowHelp()
         {
             Console.WriteLine(
-                @"Usage: ficdown.exe
-    --format (html|epub|lint)
-    --in ""/path/to/source.md"" (lint reads sdtin)
+                @"Usage: ficdown
+    --format (html|epub)
+    --in ""/path/to/source.md""
     [--out ""/path/to/output""]
     [--template ""/path/to/template/dir""]
     [--images ""/path/to/images/dir""]
     [--author ""Author Name""]
     [--bookid ""ePub Book ID""]
     [--language ""language""]
-    [--debug]");
+    [--debug]
+or: ficdown --format lint
+    (reads input from stdin)");
         }
     }
 }

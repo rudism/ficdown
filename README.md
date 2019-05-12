@@ -29,8 +29,8 @@ The pre-built releases are self-contained .NET Core deployments, so you should b
 Running ficdown.exe without any arguments will produce the following help text:
 
     Usage: ficdown.exe
-        --format (html|epub)
-        --in "/path/to/source.md"
+        --format (html|epub|lint)
+        --in "/path/to/source.md" (lint reads stdin)
         [--out "/path/to/output"]
         [--template "/path/to/template/dir"]
         [--images "/path/to/images/dir"]
