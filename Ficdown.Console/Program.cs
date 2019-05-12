@@ -198,7 +198,7 @@
             Console.WriteLine(
                 @"Usage: ficdown.exe
     --format (html|epub|lint)
-    --in ""/path/to/source.md""
+    --in ""/path/to/source.md"" (lint reads sdtin)
     [--out ""/path/to/output""]
     [--template ""/path/to/template/dir""]
     [--images ""/path/to/images/dir""]
