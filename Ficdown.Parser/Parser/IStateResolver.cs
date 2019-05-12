@@ -7,6 +7,7 @@
 
     internal interface IStateResolver
     {
+        List<FicdownException> Warnings { set; }
         ResolvedStory Resolve(IEnumerable<PageState> pages, Story story);
     }
 }

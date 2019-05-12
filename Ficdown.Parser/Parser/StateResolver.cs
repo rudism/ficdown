@@ -15,6 +15,8 @@
         private readonly HashSet<string> _usedNames;
         private Story _story;
 
+        public List<FicdownException> Warnings { private get; set; }
+
         public StateResolver()
         {
             _pageNames = new Dictionary<string, string>();
@@ -43,12 +45,15 @@
         private string ResolveAnchor(string blockName, int lineNumber, Anchor anchor, IDictionary<string, bool> playerState, string targetHash)
         {
             var text = anchor.Text;
-            if (anchor.Href.Conditions != null)
+            if (anchor.Href != null && anchor.Href.Conditions != null)
             {
-                var satisfied = Utilities.GetInstance(blockName, lineNumber).ConditionsMet(playerState, anchor.Href.Conditions);
-                var alts = Utilities.GetInstance(blockName, lineNumber).ParseConditionalText(text);
-                var replace = alts[satisfied];
-                text = RegexLib.EscapeChar.Replace(replace, string.Empty);
+                var satisfied = Utilities.GetInstance(Warnings, blockName, lineNumber).ConditionsMet(playerState, anchor.Href.Conditions);
+                var alts = Utilities.GetInstance(Warnings, blockName, lineNumber).ParseConditionalText(anchor);
+                if(alts != null)
+                {
+                    var replace = alts[satisfied];
+                    text = RegexLib.EscapeChar.Replace(replace, string.Empty);
+                }
             }
             return !string.IsNullOrEmpty(text) && !string.IsNullOrEmpty(targetHash)
                 ? string.Format("[{0}](/{1})", text, GetPageNameForHash(targetHash))
@@ -67,7 +72,7 @@
                 if (page.State.ActionsToShow[i])
                 {
                     var actionTuple = _story.Actions.Single(a => a.Value.Id == i + 1);
-                    var actionAnchors = Utilities.GetInstance(page.Scene.Name, page.Scene.LineNumber).ParseAnchors(actionTuple.Value.Description);
+                    var actionAnchors = Utilities.GetInstance(Warnings, page.Scene.Name, page.Scene.LineNumber).ParseAnchors(actionTuple.Value.RawDescription);
                     var anchorDict = GetStateDictionary(page);
                     if (
                         actionAnchors.Any(
@@ -86,7 +91,7 @@
                 }
             }
 
-            var anchors = Utilities.GetInstance(page.Scene.Name, page.Scene.LineNumber).ParseAnchors(page.Scene.Description);
+            var anchors = Utilities.GetInstance(Warnings, page.Scene.Name, page.Scene.LineNumber).ParseAnchors(page.Scene.RawDescription);
             var stateDict = GetStateDictionary(page);
             var text =
                 RegexLib.EmptyListItem.Replace(

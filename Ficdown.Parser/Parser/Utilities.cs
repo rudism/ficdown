@@ -1,7 +1,5 @@
-﻿
-namespace Ficdown.Parser.Parser
+﻿namespace Ficdown.Parser.Parser
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text.RegularExpressions;
@@ -9,19 +7,23 @@ namespace Ficdown.Parser.Parser
 
     internal class Utilities
     {
-        public static Utilities GetInstance(string blockName, int lineNumber)
+        private List<FicdownException> _warnings { get; set; }
+
+        public static Utilities GetInstance(List<FicdownException> warnings, string blockName, int lineNumber)
         {
             return new Utilities
             {
+                _warnings = warnings,
                 _blockName = blockName,
                 _lineNumber = lineNumber
             };
         }
 
-        public static Utilities GetInstance(string blockName)
+        public static Utilities GetInstance(List<FicdownException> warnings, string blockName)
         {
             return new Utilities
             {
+                _warnings = warnings,
                 _blockName = blockName
             };
         }
@@ -34,7 +36,7 @@ namespace Ficdown.Parser.Parser
             return Regex.Replace(Regex.Replace(raw.ToLower(), @"^\W+|\W+$", string.Empty), @"\W+", "-");
         }
 
-        private Href ParseHref(string href)
+        private Href ParseHref(string href, int lineNumber, int colNumber)
         {
             var match = RegexLib.Href.Match(href);
             if (match.Success)
@@ -57,27 +59,55 @@ namespace Ficdown.Parser.Parser
                             : null
                 };
             }
-            throw new FicdownException(_blockName, _lineNumber, string.Format("Invalid href: {0}", href));
+            _warnings.Add(new FicdownException(_blockName, string.Format("Invalid href: {0}", href), lineNumber, colNumber));
+            return null;
         }
 
-        public Anchor ParseAnchor(string anchorText)
+        public Anchor ParseAnchor(string anchorText, int lineNumber, int colNumber)
         {
             var match = RegexLib.Anchors.Match(anchorText);
-            if (!match.Success) throw new FicdownException(_blockName, _lineNumber, string.Format("Invalid anchor: {0}", anchorText));
-            return MatchToAnchor(match);
+            if (!match.Success)
+            {
+                _warnings.Add(new FicdownException(_blockName, string.Format("Invalid anchor: {0}", anchorText), lineNumber, colNumber));
+                return null;
+            }
+            return MatchToAnchor(match, lineNumber, colNumber);
+        }
+
+        private void PosFromIndex(string text, int index, out int line, out int col)
+        {
+            line = 1;
+            col = 1;
+            for (int i = 0; i <= index - 1; i++)
+            {
+                col++;
+                if (text[i] == '\n')
+                {
+                    line++;
+                    col = 1;
+                }
+            }
         }
 
         public IList<Anchor> ParseAnchors(string text)
         {
             var matches = RegexLib.Anchors.Matches(text);
-            return matches.Cast<Match>().Select(MatchToAnchor).ToList();
+            return matches.Cast<Match>().Select(m =>
+            {
+                int line, col;
+                PosFromIndex(text, m.Index, out line, out col);
+                if(_lineNumber.HasValue) line += _lineNumber.Value;
+                return MatchToAnchor(m, line, col);
+            }).ToList();
         }
 
-        private Anchor MatchToAnchor(Match match)
+        private Anchor MatchToAnchor(Match match, int lineNumber, int colNumber)
         {
             var astr = match.Groups["anchor"].Value;
             var txstr = match.Groups["text"].Value;
-            var ttstr = match.Groups["title"].Value;
+            var ttstr = match.Groups["title"].Success
+                ? match.Groups["title"].Value
+                : null;
             var hrefstr = match.Groups["href"].Value;
             if (hrefstr.StartsWith(@""""))
             {
@@ -89,14 +119,21 @@ namespace Ficdown.Parser.Parser
                 Original = !string.IsNullOrEmpty(astr) ? astr : null,
                 Text = !string.IsNullOrEmpty(txstr) ? txstr : null,
                 Title = ttstr,
-                Href = ParseHref(hrefstr)
+                Href = ParseHref(hrefstr, lineNumber, colNumber),
+                LineNumber = lineNumber,
+                ColNumber = colNumber
             };
         }
 
-        public IDictionary<bool, string> ParseConditionalText(string text)
+        public IDictionary<bool, string> ParseConditionalText(Anchor anchor)
         {
-            var match = RegexLib.ConditionalText.Match(text);
-            if (!match.Success) throw new FicdownException(_blockName, _lineNumber, string.Format(@"Invalid conditional text: {0}", text));
+            var match = RegexLib.ConditionalText.Match(anchor.Text);
+            if (!match.Success)
+            {
+                _warnings.Add(new FicdownException(_blockName, string.Format(@"Invalid conditional text: {0}", anchor.Text), anchor.LineNumber, anchor.ColNumber));
+                return null;
+            }
+
             return new Dictionary<bool, string>
             {
                 {true, match.Groups["true"].Value},

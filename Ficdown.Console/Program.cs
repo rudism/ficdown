@@ -3,7 +3,6 @@
     using System;
     using System.Linq;
     using System.IO;
-    using Microsoft.SqlServer.Server;
     using Parser;
     using Parser.Render;
     using Parser.Model.Parser;
@@ -16,8 +15,7 @@
             {
                 if(e.ExceptionObject is FicdownException)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.Error.WriteLine(e.ExceptionObject.ToString());
+                    Console.WriteLine(e.ExceptionObject.ToString());
                     Environment.Exit(3);
                 }
             };
@@ -85,98 +83,112 @@
                 ShowHelp();
                 return 0;
             }
-            if (string.IsNullOrWhiteSpace(format) || string.IsNullOrWhiteSpace(infile))
-            {
-                ShowHelp();
-                return 1;
-            }
-            if (!File.Exists(infile))
-            {
-                Console.WriteLine(@"Source file {0} not found.", infile);
-                return 2;
-            }
-            if (string.IsNullOrWhiteSpace(output))
-                if (format == "html")
-                    output = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"html");
-                else if (format == "epub")
-                    output = "output.epub";
 
-            if (!string.IsNullOrWhiteSpace(output) && (Directory.Exists(output) || File.Exists(output)))
+            var lintMode = format == "lint";
+
+            if(!lintMode)
             {
-                Console.WriteLine(@"Specified output {0} already exists.", output);
-                return 2;
-            }
-            if (!string.IsNullOrWhiteSpace(tempdir))
-            {
-                if (!Directory.Exists(tempdir))
+                if (string.IsNullOrWhiteSpace(format) || string.IsNullOrWhiteSpace(infile))
                 {
-                    Console.WriteLine(@"Template directory {0} does not exist.", tempdir);
+                    ShowHelp();
+                    return 1;
+                }
+                if (!File.Exists(infile))
+                {
+                    Console.WriteLine(@"Source file {0} not found.", infile);
                     return 2;
                 }
-                if (!File.Exists(Path.Combine(tempdir, "index.html")) ||
-                    !File.Exists(Path.Combine(tempdir, "scene.html")) ||
-                    !File.Exists(Path.Combine(tempdir, "styles.css")))
-                {
-                    Console.WriteLine(
-                        @"Template directory must contain ""index.html"", ""scene.html"", and ""style.css"" files.");
-                }
-            }
+                if (string.IsNullOrWhiteSpace(output))
+                    if (format == "html")
+                        output = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"html");
+                    else if (format == "epub")
+                        output = "output.epub";
+                    else if(format == "lint")
+                        lintMode = true;
 
-            if (!string.IsNullOrWhiteSpace(images) && !Directory.Exists(images))
-            {
-                Console.WriteLine(@"Images directory {0} does not exist.", images);
-                return 2;
+                if (!string.IsNullOrWhiteSpace(output) && (Directory.Exists(output) || File.Exists(output)))
+                {
+                    Console.WriteLine(@"Specified output {0} already exists.", output);
+                    return 2;
+                }
+                if (!string.IsNullOrWhiteSpace(tempdir))
+                {
+                    if (!Directory.Exists(tempdir))
+                    {
+                        Console.WriteLine(@"Template directory {0} does not exist.", tempdir);
+                        return 2;
+                    }
+                    if (!File.Exists(Path.Combine(tempdir, "index.html")) ||
+                        !File.Exists(Path.Combine(tempdir, "scene.html")) ||
+                        !File.Exists(Path.Combine(tempdir, "styles.css")))
+                    {
+                        Console.WriteLine(
+                            @"Template directory must contain ""index.html"", ""scene.html"", and ""style.css"" files.");
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(images) && !Directory.Exists(images))
+                {
+                    Console.WriteLine(@"Images directory {0} does not exist.", images);
+                    return 2;
+                }
             }
 
             var parser = new FicdownParser();
-            var storyText = File.ReadAllText(infile);
 
-            Console.WriteLine(@"Parsing story...");
+            string storyText;
+            if(!lintMode)
+            {
+                storyText = File.ReadAllText(infile);
+                Console.WriteLine(@"Parsing story...");
+            }
+            else
+            {
+                storyText = Console.In.ReadToEnd();
+            }
 
             var story = parser.ParseStory(storyText);
 
-            story.Orphans.ToList().ForEach(o =>
-            {
-                var currentColor = Console.ForegroundColor;
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.Error.WriteLine("Warning (line {0}): {1} {2} is unreachable", o.LineNumber, o.Type, o.Name);
-                Console.ForegroundColor = currentColor;
-            });
+            parser.Warnings.Select(w => w.ToString()).Distinct().ToList().ForEach(s => Console.WriteLine(s));
+            story.Orphans.ToList().ForEach(o => Console.WriteLine("Warning L{0},1: \"{1}\": Unreachable {2}", o.LineNumber, o.Name, o.Type));
 
-            IRenderer rend;
-            switch (format)
+            if(!lintMode && parser.Warnings.Count() == 0)
             {
-                case "html":
-                    Directory.CreateDirectory(output);
-                    rend = new HtmlRenderer(language);
-                    break;
-                case "epub":
-                    if (string.IsNullOrWhiteSpace(author))
-                    {
-                        Console.WriteLine(@"Epub format requires the --author argument.");
+                IRenderer rend;
+                switch (format)
+                {
+                    case "html":
+                        Directory.CreateDirectory(output);
+                        rend = new HtmlRenderer(language);
+                        break;
+                    case "epub":
+                        if (string.IsNullOrWhiteSpace(author))
+                        {
+                            Console.WriteLine(@"Epub format requires the --author argument.");
+                            return 1;
+                        }
+                        rend = new EpubRenderer(author, bookid, language);
+                        break;
+                    default:
+                        ShowHelp();
                         return 1;
-                    }
-                    rend = new EpubRenderer(author, bookid, language);
-                    break;
-                default:
-                    ShowHelp();
-                    return 1;
+                }
+
+                if (!string.IsNullOrWhiteSpace(tempdir))
+                {
+                    rend.IndexTemplate = File.ReadAllText(Path.Combine(tempdir, "index.html"));
+                    rend.SceneTemplate = File.ReadAllText(Path.Combine(tempdir, "scene.html"));
+                    rend.StylesTemplate = File.ReadAllText(Path.Combine(tempdir, "styles.css"));
+                };
+
+                if (!string.IsNullOrWhiteSpace(images)) rend.ImageDir = images;
+
+                Console.WriteLine(@"Rendering story...");
+
+                rend.Render(story, output, debug);
+
+                Console.WriteLine(@"Done.");
             }
-
-            if (!string.IsNullOrWhiteSpace(tempdir))
-            {
-                rend.IndexTemplate = File.ReadAllText(Path.Combine(tempdir, "index.html"));
-                rend.SceneTemplate = File.ReadAllText(Path.Combine(tempdir, "scene.html"));
-                rend.StylesTemplate = File.ReadAllText(Path.Combine(tempdir, "styles.css"));
-            };
-
-            if (!string.IsNullOrWhiteSpace(images)) rend.ImageDir = images;
-
-            Console.WriteLine(@"Rendering story...");
-
-            rend.Render(story, output, debug);
-
-            Console.WriteLine(@"Done.");
             return 0;
         }
 
@@ -185,8 +197,8 @@
         {
             Console.WriteLine(
                 @"Usage: ficdown.exe
-    --format (html|epub)
-    --in ""/path/to/source.md""
+    --format (html|epub|lint)
+    --in ""/path/to/source.md"" (lint reads sdtin)
     [--out ""/path/to/output""]
     [--template ""/path/to/template/dir""]
     [--images ""/path/to/images/dir""]
