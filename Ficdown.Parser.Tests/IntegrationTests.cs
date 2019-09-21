@@ -9,6 +9,7 @@
         [Fact]
         public void CanParseValidStoryFile()
         {
+            Logger.Initialize(true);
             var parser = new FicdownParser();
             var storyText = File.ReadAllText(Path.Combine(Template.BaseDir, "TestStories", "CloakOfDarkness.md"));
             var story = parser.ParseStory(storyText);

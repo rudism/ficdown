@@ -84,6 +84,9 @@
                 return 0;
             }
 
+            Logger.Initialize(debug);
+            var logger = Logger.GetLogger<Program>();
+
             var lintMode = format == "lint";
 
             if(!lintMode)
@@ -95,7 +98,7 @@
                 }
                 if (!File.Exists(infile))
                 {
-                    Console.WriteLine(@"Source file {0} not found.", infile);
+                    logger.Error($"Source file {infile} not found.");
                     return 2;
                 }
                 if (string.IsNullOrWhiteSpace(output))
@@ -108,28 +111,28 @@
 
                 if (!string.IsNullOrWhiteSpace(output) && (Directory.Exists(output) || File.Exists(output)))
                 {
-                    Console.WriteLine(@"Specified output {0} already exists.", output);
+                    logger.Error($"Specified output {output} already exists.");
                     return 2;
                 }
                 if (!string.IsNullOrWhiteSpace(tempdir))
                 {
                     if (!Directory.Exists(tempdir))
                     {
-                        Console.WriteLine(@"Template directory {0} does not exist.", tempdir);
+                        logger.Error($"Template directory {tempdir} does not exist.");
                         return 2;
                     }
                     if (!File.Exists(Path.Combine(tempdir, "index.html")) ||
                         !File.Exists(Path.Combine(tempdir, "scene.html")) ||
                         !File.Exists(Path.Combine(tempdir, "styles.css")))
                     {
-                        Console.WriteLine(
+                        logger.Error(
                             @"Template directory must contain ""index.html"", ""scene.html"", and ""style.css"" files.");
                     }
                 }
 
                 if (!string.IsNullOrWhiteSpace(images) && !Directory.Exists(images))
                 {
-                    Console.WriteLine(@"Images directory {0} does not exist.", images);
+                    logger.Error($"Images directory {images} does not exist.");
                     return 2;
                 }
             }
@@ -140,7 +143,7 @@
             if(!lintMode)
             {
                 storyText = File.ReadAllText(infile);
-                Console.WriteLine(@"Parsing story...");
+                logger.Log(@"Parsing story...");
             }
             else
             {
@@ -149,8 +152,8 @@
 
             var story = parser.ParseStory(storyText);
 
-            parser.Warnings.Select(w => w.ToString()).Distinct().ToList().ForEach(s => Console.WriteLine(s));
-            story.Orphans.ToList().ForEach(o => Console.WriteLine("Warning L{0},1: \"{1}\": Unreachable {2}", o.LineNumber, o.Name, o.Type));
+            parser.Warnings.Select(w => w.ToString()).Distinct().ToList().ForEach(s => logger.Raw(s));
+            story.Orphans.ToList().ForEach(o => logger.Raw($"Warning L{o.LineNumber},1: \"{o.Name}\": Unreachable {o.Type}"));
 
             if(!lintMode && parser.Warnings.Count() == 0)
             {
@@ -164,7 +167,7 @@
                     case "epub":
                         if (string.IsNullOrWhiteSpace(author))
                         {
-                            Console.WriteLine(@"Epub format requires the --author argument.");
+                            logger.Error(@"Epub format requires the --author argument.");
                             return 1;
                         }
                         rend = new EpubRenderer(author, bookid, language);
@@ -183,11 +186,11 @@
 
                 if (!string.IsNullOrWhiteSpace(images)) rend.ImageDir = images;
 
-                Console.WriteLine(@"Rendering story...");
+                logger.Log(@"Rendering story...");
 
                 rend.Render(story, output, debug);
 
-                Console.WriteLine(@"Done.");
+                logger.Log(@"Done.");
             }
             return 0;
         }

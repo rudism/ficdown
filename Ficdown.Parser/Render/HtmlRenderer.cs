@@ -3,15 +3,14 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using MarkdownSharp;
+    using Markdig;
     using Model.Parser;
     using Parser;
 
     public class HtmlRenderer : IRenderer
     {
+        private static Logger _logger = Logger.GetLogger<HtmlRenderer>();
         private readonly string _language;
-
-        protected readonly Markdown Markdown;
 
         public List<FicdownException> Warnings { private get; set; }
 
@@ -25,7 +24,6 @@
         public HtmlRenderer(string language)
         {
             _language = language;
-            Markdown = new Markdown();
         }
 
         public virtual void Render(ResolvedStory story, string outPath, bool debug = false)
@@ -42,11 +40,12 @@
 
         protected void GenerateHtml(ResolvedStory story, string outPath, bool debug)
         {
+            _logger.Debug("Generating HTML...");
             var index = FillTemplate(IndexTemplate ?? Template.Index, new Dictionary<string, string>
             {
                 {"Language", _language},
                 {"Title", story.Name},
-                {"Description", Markdown.Transform(story.Description)},
+                {"Description", Markdown.ToHtml(story.Description)},
                 {"FirstScene", string.Format("{0}.html", story.FirstPage)}
             });
 
@@ -72,7 +71,7 @@
                 {
                     {"Language", _language},
                     {"Title", story.Name},
-                    {"Content", Markdown.Transform(content)}
+                    {"Content", Markdown.ToHtml(content)}
                 });
 
                 File.WriteAllText(Path.Combine(outPath, string.Format("{0}.html", page.Name)), scene);

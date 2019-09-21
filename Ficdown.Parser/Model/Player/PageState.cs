@@ -7,6 +7,8 @@
 
     internal class PageState
     {
+        public StateManager Manager { get; set; }
+
         public Guid Id { get; set; }
         public Scene Scene { get; set; }
         public State State { get; set; }
@@ -21,12 +23,12 @@
 
         public string UniqueHash
         {
-            get { return _uniqueHash ?? (_uniqueHash = StateManager.GetUniqueHash(State, Scene.Key)); }
+            get { return _uniqueHash ?? (_uniqueHash = Manager.GetUniqueHash(State, Scene.Key)); }
         }
 
         public string CompressedHash
         {
-            get { return _compressedHash ?? (_compressedHash = StateManager.GetCompressedHash(this)); }
+            get { return _compressedHash ?? (_compressedHash = Manager.GetCompressedHash(this)); }
         }
     }
 }

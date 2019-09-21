@@ -10,6 +10,7 @@
 
     internal class StateResolver : IStateResolver
     {
+        private static Logger _logger = Logger.GetLogger<StateResolver>();
         private static readonly Random _random = new Random((int) DateTime.Now.Ticks);
         private readonly IDictionary<string, string> _pageNames;
         private readonly HashSet<string> _usedNames;
@@ -25,6 +26,7 @@
 
         public ResolvedStory Resolve(IEnumerable<PageState> pages, Story story)
         {
+            _logger.Debug("Resolving story paths...");
             _story = story;
             return new ResolvedStory
             {

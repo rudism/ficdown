@@ -11,6 +11,7 @@
 
     internal class GameTraverser : IGameTraverser
     {
+        private static Logger _logger = Logger.GetLogger<GameTraverser>();
         private StateManager _manager;
         private Queue<StateQueueItem> _processingQueue;
         private IDictionary<string, PageState> _processed;
@@ -59,6 +60,7 @@
             _wasRun = true;
 
             // generate comprehensive enumeration
+            _logger.Debug("Enumerating story scenes...");
 
             var initial = _manager.InitialState;
             _processingQueue.Enqueue(new StateQueueItem
@@ -66,6 +68,7 @@
                 Page = initial,
                 AffectedStates = new List<State> {initial.AffectedState}
             });
+            var interval = 0;
             while (_processingQueue.Count > 0)
             {
                 var state = _processingQueue.Dequeue();
@@ -74,9 +77,13 @@
                     _processed.Add(state.Page.UniqueHash, state.Page);
                     ProcessState(state);
                 }
+
+                if(++interval % 100 == 0 || _processingQueue.Count == 0)
+                    _logger.Debug($"Processed {interval} scenes, {_processingQueue.Count} queued...");
             }
 
             // make sure every page gets affected data on every page that it links to
+            _logger.Debug("Processing scene links...");
             foreach (var pageTuple in _processed)
             {
                 foreach (var linkTuple in pageTuple.Value.Links)
@@ -95,6 +102,7 @@
             }
 
             // compress redundancies
+            _logger.Debug("Compressing redundant scenes...");
             foreach (var row in _processed)
             {
                 if (!_compressed.ContainsKey(row.Value.CompressedHash))

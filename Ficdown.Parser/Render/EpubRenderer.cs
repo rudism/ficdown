@@ -89,6 +89,7 @@
 
     public class EpubRenderer : HtmlRenderer
     {
+        private static readonly Logger _logger = Logger.GetLogger<EpubRenderer>();
         private readonly string _author;
         private readonly string _bookId;
         private readonly string _language;
@@ -103,6 +104,7 @@
 
         public override void Render(Model.Parser.ResolvedStory story, string outPath, bool debug = false)
         {
+            _logger.Debug("Generating epub...");
             var temppath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(temppath);
             base.Render(story, temppath, debug);

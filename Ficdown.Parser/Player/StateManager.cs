@@ -11,10 +11,12 @@
 
     internal class StateManager
     {
+        private static Logger _logger = Logger.GetLogger<StateManager>();
         private readonly Story _story;
         private readonly Dictionary<string, int> _stateMatrix;
         private readonly int _sceneCount;
         private readonly int _actionCount;
+        private BitArray _scenesSeenMask;
 
         private List<FicdownException> _warnings { get; set; }
 
@@ -24,6 +26,18 @@
             _story = story;
             var allScenes = _story.Scenes.SelectMany(s => s.Value);
             _sceneCount = allScenes.Max(s => s.Id);
+            _scenesSeenMask = new BitArray(_sceneCount);
+
+            // figure out which scenes can affect state
+            var masked = 0;
+            foreach(var scene in allScenes)
+            {
+                if(Utilities.GetInstance().ParseAnchors(scene.RawDescription).Any(a => a.Href.Toggles != null) || RegexLib.BlockQuotes.IsMatch(scene.RawDescription))
+                {
+                    _scenesSeenMask[scene.Id - 1] = true;
+                    masked++;
+                }
+            }
             _actionCount = _story.Actions.Count > 0 ? _story.Actions.Max(a => a.Value.Id) : 0;
             _stateMatrix = new Dictionary<string, int>();
             var state = 0;
@@ -40,6 +54,9 @@
             {
                 _stateMatrix.Add(toggle, state++);
             }
+            _logger.Debug($"{_sceneCount} scenes ({masked} can change state).");
+            _logger.Debug($"{_actionCount} actions.");
+            _logger.Debug($"{_stateMatrix.Count()} states.");
         }
 
         public PageState InitialState
@@ -54,6 +71,8 @@
 
                 return new PageState
                 {
+                    Manager = this,
+
                     Id = Guid.Empty,
                     Links = new Dictionary<string, string>(),
                     State = new State
@@ -119,14 +138,14 @@
             state.ScenesSeen[sceneId - 1] = true;
         }
 
-        public static string GetUniqueHash(State state, string sceneKey)
+        public string GetUniqueHash(State state, string sceneKey)
         {
             var combined =
                 new bool[
                     state.PlayerState.Count + state.ScenesSeen.Count + state.ActionsToShow.Count +
                     (state.ActionFirstToggles != null ? state.ActionFirstToggles.Count : 0)];
             state.PlayerState.CopyTo(combined, 0);
-            state.ScenesSeen.CopyTo(combined, state.PlayerState.Count);
+            state.ScenesSeen.And(_scenesSeenMask).CopyTo(combined, state.PlayerState.Count);
             state.ActionsToShow.CopyTo(combined, state.PlayerState.Count + state.ScenesSeen.Count);
             if (state.ActionFirstToggles != null)
                 state.ActionFirstToggles.CopyTo(combined,
@@ -134,11 +153,15 @@
             var ba = new BitArray(combined);
             var byteSize = (int)Math.Ceiling(combined.Length / 8.0);
             var encoded = new byte[byteSize];
+            for(var i = 0; i < byteSize; i++)
+            {
+                encoded[i] = 0;
+            }
             ba.CopyTo(encoded, 0);
             return string.Format("{0}=={1}", sceneKey, Convert.ToBase64String(encoded));
         }
 
-        public static string GetCompressedHash(PageState page)
+        public string GetCompressedHash(PageState page)
         {
             var compressed = new State
             {
@@ -187,6 +210,8 @@
         {
             return new PageState
             {
+                Manager = this,
+
                 Id = Guid.NewGuid(),
                 Links = new Dictionary<string, string>(),
                 State = new State

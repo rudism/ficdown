@@ -9,6 +9,15 @@
     {
         private List<FicdownException> _warnings { get; set; }
 
+        public static Utilities GetInstance()
+        {
+            return new Utilities
+            {
+                _warnings = new List<FicdownException>(),
+                _blockName = string.Empty
+            };
+        }
+
         public static Utilities GetInstance(List<FicdownException> warnings, string blockName, int lineNumber)
         {
             return new Utilities

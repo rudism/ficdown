@@ -12,6 +12,7 @@ namespace Ficdown.Parser
 
     public class FicdownParser
     {
+        private static Logger _logger = Logger.GetLogger<FicdownParser>();
         public List<FicdownException> Warnings { get; private set; }
 
         private IBlockHandler _blockHandler;
@@ -64,8 +65,11 @@ namespace Ficdown.Parser
         public ResolvedStory ParseStory(string storyText)
         {
             var lines = storyText.Split(new[] {"\n", "\r\n"}, StringSplitOptions.None);
+            _logger.Debug($"Parsed {lines.Length} lines.");
             var blocks = BlockHandler.ExtractBlocks(lines);
+            _logger.Debug($"Extracted {blocks.Count()} blocks.");
             var story = BlockHandler.ParseBlocks(blocks);
+            _logger.Debug("Finished initial story breakdown.");
 
             // dupe scene sanity check
             foreach(var key in story.Scenes.Keys)
