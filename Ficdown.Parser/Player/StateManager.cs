@@ -182,7 +182,7 @@
                 {
                     if (ConditionsMatch(scene, playerState) &&
                         (newScene == null || newScene.Conditions == null ||
-                         scene.Conditions.Count > newScene.Conditions.Count))
+                         (scene.Conditions != null && scene.Conditions.Count > newScene.Conditions.Count)))
                     {
                         newScene = scene;
                     }

@@ -13,6 +13,7 @@
     <PackageReference Include="Epub4Net" Version="1.2.0" />
     <PackageReference Include="Ionic.Zip" Version="1.9.1.8" />
     <PackageReference Include="Markdig" Version="0.17.1" />
+    <PackageReference Include="System.Security.Permissions" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="4.5.1" />
   </ItemGroup>
 </Project>
