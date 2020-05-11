@@ -85,6 +85,12 @@ If you pass this option, all of the pages in your story will include output at t
 
 To generate other formats than HTML or epub, you will have to use third party tools. [Calibre](http://www.calibre-ebook.com) is a popular ebook management suite that includes the ability to convert books from almost any format to any other format. Also, Amazon has an official tool called [KindleGen](http://www.amazon.com/gp/feature.html?docId=1000765211) that you can use to convert your epub to a format that can be read on Kindles.
 
-### Interactive Website
+### Additional Tools
 
-Ficdown stories can be played interactively in a web browser without even requiring the command line utility here. See [Ficdown.js](https://github.com/rudism/Ficdown.js) for a Javascript Ficdown parser and interpreter that you can include on your own website to present your Ficdown stories.
+- Ficdown stories can be played interactively in a web browser without even requiring the command line utility here. See [Ficdown.js](https://github.com/rudism/Ficdown.js) for a Javascript Ficdown parser and interpreter that you can include on your own website to present your Ficdown stories.
+
+- [Ficdown-editor](https://byfernanz.github.io/ficdown-editor/) is a web-based GUI for writing Ficdown.
+
+- [Prop](https://github.com/ByFernanz/prop) is a YAML-header style preprocessor for Ficdown
+
+- [vim-ficdown](https://github.com/rudism/vim-ficdown) is an ALE linter for vim that identifies things like links to scenes that don't exist, unused variables, and other errors and warnings in Ficdown files.
