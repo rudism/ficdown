@@ -1,3 +1,5 @@
+**Note:** Active development has moved to https://code.sitosis.com/rudism/ficdown
+
 # Ficdown
 
 Ficdown is a system for building interactive fiction using MarkDown syntax. See [Ficdown.com](http://www.ficdown.com) for more information.
